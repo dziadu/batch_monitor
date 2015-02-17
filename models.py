@@ -25,7 +25,11 @@ class UserData():
 		self.q_fairshare = deque(maxlen=self.colsize)
 		self.l_jobprogress = []
 
-		self.clear()
+		self.njobsT = 0
+		self.njobsR = 0
+		self.njobsH = 0
+		self.njobsQ = 0
+		self.fairshare = 100.0
 
 	def clear(self):
 		self.njobsT = 0
@@ -37,6 +41,7 @@ class UserData():
 
 	def fill(self):
 		self.njobsT = self.njobsR + self.njobsH + self.njobsQ
+
 		self.q_njobsT.append(self.njobsT)
 		self.q_njobsR.append(self.njobsR)
 		self.q_njobsH.append(self.njobsH)

@@ -156,6 +156,7 @@ def parse_farm(farm):
 		g_users[u'TOTAL'] = UserData()
 
 	g_user_total = g_users[u'TOTAL']
+	g_user_total.clear()
 
 	parse_diagnose(dia_out)
 	parse_qstat(qst_out)
@@ -164,9 +165,7 @@ def parse_farm(farm):
 	g_view_list.append(u'TOTAL')
 
 	for u in g_users.keys():
-		#g_users[u].clear()
 		g_users[u].fill()
-		#g_users[u].model_fill(u)
 
 		val = g_users[u]
 

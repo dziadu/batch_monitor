@@ -1,0 +1,43 @@
+body {
+/* 	color: green; */
+	text-align: center;
+	margin: 0 auto;
+}
+
+div#top-links {
+	background-color: #445566;
+	color: white;
+	padding: 1px;
+}
+
+#top-links a {
+	color: white;
+}
+
+ui.nav {
+	list-style-type: none;
+	margin: 0;
+	padding: 1px;
+}
+
+ul.nav li {
+	display: inline;
+	padding-left: 10px;
+}
+
+div#farmlist {
+	background-color: red;
+}
+
+div.chart {
+/* 	float: left; */
+	display: inline-block;
+	border: 1px solid black;
+	max-width: 500px;
+	width: 100%;
+	height: 45%;
+/* 	min-width: 500px; */
+
+/* 	padding: 5px; */
+	margin-top: 1px;
+}

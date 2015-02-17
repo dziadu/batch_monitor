@@ -1,0 +1,25 @@
+{% load staticfiles %}
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="{% static 'batch_monitor/style.css' %}" />
+</head>
+
+<body>
+
+<div if="farmlist">
+
+<p>Select batch farm to monitor:</p>
+
+{% if farms_list %}
+    <ul>
+    {% for farm in farms_list %}
+	<li><a href="{% url 'batch_monitor:monitor' farm.id %}">{{ farm.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+</div>
+
+</body>
+</html>

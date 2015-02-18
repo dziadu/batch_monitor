@@ -1,7 +1,7 @@
 body {
-/* 	color: green; */
 	text-align: center;
 	margin: 0 auto;
+	background-color: #ababab;
 }
 
 div#top-links {
@@ -14,30 +14,28 @@ div#top-links {
 	color: white;
 }
 
-ui.nav {
+ul.nav {
 	list-style-type: none;
 	margin: 0;
-	padding: 1px;
+	padding: 10px;
 }
 
 ul.nav li {
 	display: inline;
-	padding-left: 10px;
+	margin: 5px 5px 5px 5px;
 }
 
 div#farmlist {
 	background-color: red;
 }
 
+div#charts {
+}
+
 div.chart {
-/* 	float: left; */
 	display: inline-block;
 	border: 1px solid black;
-	max-width: 900px;
-	width: 100%;
+	width: 49%;
 	height: 45%;
-/* 	min-width: 500px; */
-
-/* 	padding: 5px; */
 	margin-top: 1px;
 }

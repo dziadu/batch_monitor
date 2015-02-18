@@ -1,41 +1,42 @@
 body {
-/* 	color: green; */
 	text-align: center;
+	margin: 0 auto;
+	background-color: #ababab;
 }
 
 div#top-links {
 	background-color: #445566;
 	color: white;
-	padding: 5px;
+	padding: 0;
+	text-align: center;
 }
 
 #top-links a {
 	color: white;
 }
 
-ui.nav {
+ul.nav {
 	list-style-type: none;
 	margin: 0;
-	padding: 5px;
+	padding: 0;
 }
 
 ul.nav li {
-	display: inline;
-	padding-left: 10px;
+	display: inline-block;
+	margin: 2px 5px 4px 5px;
 }
 
 div#farmlist {
 	background-color: red;
 }
 
+div#charts {
+	margin: 0 10px 0 10px;
+}
+
 div.chart {
-/* 	float: left; */
 	display: inline-block;
-	border: 1px solid black;
 	width: 100%;
 	height: 42%;
-/* 	min-width: 500px; */
-
-/* 	padding: 5px; */
 	margin-top: 2px;
 }

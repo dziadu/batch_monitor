@@ -55,11 +55,13 @@ def show_charts(chart_list=None, render_to=''):
 
 	opening_embed_script = (
 		'<script src="http://code.highcharts.com/highcharts.js"></script>\n'
+		'<script src="http://code.highcharts.com/modules/no-data-to-display.js"></script>\n'
 		'<script type="text/javascript">\n'
 		'Highcharts.setOptions({\n'
 		'	global: {\n'
-		'		useUTC: false\n'
-		'	}\n'
+		'		useUTC: false },\n'
+		'	lang: {\n'
+		'		noData: "No data to display, wait for server to update" },\n'
 		'});\n')
 	closing_embed_script = (
 		'</script>\n')
@@ -68,6 +70,10 @@ def show_charts(chart_list=None, render_to=''):
 		'$(function () { $(\'#%s\').highcharts(\n'
 		'%s\n'
 		'); });\n')
+
+	no_data_script = '<script src="http://code.highcharts.com/no-data-to-display.js"></script>\n'
+
+	#aux = None;
 
 	embed_script = ""
 

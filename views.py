@@ -33,9 +33,6 @@ def monitor(request, farm_id):
 	d['farm'] = farm
 	d['view_list'] = cache.get("view_list")
 
-	if d['view_list'] is None:
-		return HttpResponse("No data from farm")
-
 	srs_tj = []
 	srs_rj = []
 	srs_fs = []
@@ -43,48 +40,48 @@ def monitor(request, farm_id):
 
 	terms = dict()
 
-	g_ts = cache.get("time_stamp", None)
-	if g_ts is None:
-		return HttpResponse("No ts on farm")
-
-	g_users = cache.get("user_list", None)
-	if g_users is None:
-		return HttpResponse("No users on farm")
-
-	_series_ts = list(g_ts.ts)
+	_series_ts = []
 	_series_tj = []
 	_series_rj = []
 	_series_fs = []
 	_series_jp = []
 
-	for u in d['view_list']:
-		if u == 'TOTAL':
-			continue
+	g_ts = cache.get("time_stamp", None)
+	if g_ts is not None:
+		_series_ts = list(g_ts.ts)
 
-		val = g_users[u]
+	g_users = cache.get("user_list", None)
 
-		_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
-		_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
-		_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
+	_vl = d['view_list']
+	if _vl is not None:
+		for u in _vl:
+			if u == 'TOTAL':
+				continue
 
-		_series_tj.append({ 'name' : u, 'data': _ltj })
-		_series_rj.append({ 'name' : u, 'data': _lrj })
-		_series_fs.append({ 'name' : u, 'data': _lfs })
-		_series_jp.append({ 'name' : u, 'data': list(val.l_jobprogress) })
+			val = g_users[u]
 
-	for u in d['view_list']:
-		if u != 'TOTAL':
-			continue
+			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
+			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
+			_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
 
-		val = g_users[u]
+			_series_tj.append({ 'name' : u, 'data': _ltj })
+			_series_rj.append({ 'name' : u, 'data': _lrj })
+			_series_fs.append({ 'name' : u, 'data': _lfs })
+			_series_jp.append({ 'name' : u, 'data': list(val.l_jobprogress) })
 
-		_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
-		_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
+		for u in _vl:
+			if u != 'TOTAL':
+				continue
 
-		_series_tj.append({ 'name' : u, 'data': _ltj, 'zIndex': 0 })
-		_series_rj.append({ 'name' : u, 'data': _lrj, 'zIndex': 0 })
+			val = g_users[u]
 
-		break
+			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
+			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
+
+			_series_tj.append({ 'name' : u, 'data': _ltj, 'zIndex': 0 })
+			_series_rj.append({ 'name' : u, 'data': _lrj, 'zIndex': 0 })
+
+			break
 
 	chart_tj = format_time_plot('Total jobs', xdata=_series_ts, ydata=_series_tj)
 	chart_rj = format_time_plot('Running jobs', xdata=_series_ts, ydata=_series_rj)
@@ -94,27 +91,26 @@ def monitor(request, farm_id):
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
 
 	return render(request, 'batch_monitor/monitor.html', d)
-	#return HttpResponse("Results %s " % poll_id)
 
 def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
 			'type': 'line',
-			'zoomType': 'x',
-			},
+			'zoomType': 'x' },
 		'title': {
-			'text': title},
+			'text': title },
 		'xAxis': {
 			'allowDecimals' : 'false',
 			'type': 'datetime',
-			'title': { 'text': xlabel},
+			'title': {
+				'text': xlabel },
 			'dateTimeLabelFormats' : {
 				'hour' : '%H:%M',
-				'day' : '%e. %b', }
-			},
+				'day' : '%e. %b', } },
 		'yAxis': {
-			'title': { 'text': ylabel},
-			'min': 0,
+			'title': { 'text': ylabel },
+			'setExtremes': {
+				'min': 0, }
 			},
 		'series': ydata,
 		'rangeSelector' : {

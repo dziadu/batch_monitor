@@ -1,8 +1,12 @@
 {% load staticfiles %}
 {% load batch_monitor %}
+<!doctype html>
 <html>
 <head>
 <!-- <meta http-equiv="refresh" content="5" > -->
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <link rel="stylesheet" type="text/css" href="{% static 'batch_monitor/style.css' %}" media="screen" />
 <link rel="stylesheet" type="text/css" href="{% static 'batch_monitor/mobile.css' %}" media="only screen and (max-width: 700px), only screen and (max-device-width: 700px)" />
 
@@ -36,15 +40,18 @@ window.onload=checkReloading;
 
 <body>
 
-<div id="top-links">
-<ul class="nav">
-<li><a href="{% url 'batch_monitor:index' %}">Go back to batch farms list</a></li>
+<div id="top-links"><ul class="nav">
+<li><a href="{% url 'batch_monitor:index' %}">Go back</a></li>
+|
 <li>Monitoring farm <emph>{{ farm.name }}</emph></li>
+|
 <li><a href="mailto:rafal.lalik@ph.tum.de?subject=FarmMonitor:">Report problem</a></li>
+|
 <li><input type="checkbox" onclick="toggleAutoRefresh(this);" id="reloadCB"> Auto Refresh 60s</li>
 </ul>
 </div>
 
+<div id="charts">
 <div id='container_tj' class="chart"> Chart will be rendered here </div>
 
 <div id='container_rj' class="chart"> Chart will be rendered here </div>
@@ -52,6 +59,7 @@ window.onload=checkReloading;
 <div id='container_fs' class="chart"> Chart will be rendered here </div>
 
 <div id='container_jp' class="chart"> Chart will be rendered here </div>
+</div>
 
 </body>
 </html>

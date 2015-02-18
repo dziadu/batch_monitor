@@ -114,6 +114,7 @@ def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 			},
 		'yAxis': {
 			'title': { 'text': ylabel},
+			'min': 0,
 			},
 		'series': ydata,
 		'rangeSelector' : {

@@ -43,71 +43,6 @@ def monitor(request, farm_id):
 
 	terms = dict()
 
-	#cht_fs = Chart(
-		#datasource = fair_share, 
-		#series_options = 
-		#[{'options':{
-			#'type': 'line',
-			#'stacking': False},
-			#'terms': terms
-			#}],
-		#chart_options = 
-		#{
-			#'chart': {
-				#'zoomType': 'x'},
-			#'title': {
-				#'text': 'Fair Share'},
-			#'xAxis': {
-				#'type': 'datetime',
-				#'minRange': 10 * 60 * 1000,
-				#'title': {
-				#'text': 'Time'}},
-			#'yAxis': {
-				#'title': {
-				#'text': 'Rank'}},
-			#'plotOptions': {
-				#'area': {
-					##'fillColor': {
-						##'linearGradient': { x1: 0, y1: 0, x2: 0, y2: 1},
-						##'stops': [
-							##[0, Highcharts.getOptions().colors[0]],
-							##[1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-						##]
-					##},
-					#'marker': {
-						#'radius': 2
-					#},
-					#'lineWidth': 1,
-					#'states': {
-						#'hover': {
-							#'lineWidth': 1
-						#}
-					#},
-					#'threshold': 'null'
-				#}
-        #},
-		#})
-
-	#cht_jp = Chart(
-		#datasource = job_progress, 
-		#series_options = 
-		#[{'options':{
-			#'type': 'scatter'},
-			#'terms': terms
-			#}],
-		#chart_options = 
-		#{'title': {
-			#'text': 'Jobs Race'},
-		#'xAxis': {
-				#'title': {
-				#'text': 'Execution time [h]'}},
-		#'yAxis': {
-				#'title': {
-				#'text': 'Progress [%]'}}
-		#},
-		##x_sortf_mapf_mts=(None, lambda i: datetime.fromtimestamp(i).strftime("%H:%M"), False)
-		#)
-
 	g_ts = cache.get("time_stamp", None)
 	if g_ts is None:
 		return HttpResponse("No ts on farm")
@@ -123,26 +58,39 @@ def monitor(request, farm_id):
 	_series_jp = []
 
 	for u in d['view_list']:
+		if u == 'TOTAL':
+			continue
+
+		val = g_users[u]
+
+		_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
+		_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
+		_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
+
+		_series_tj.append({ 'name' : u, 'data': _ltj })
+		_series_rj.append({ 'name' : u, 'data': _lrj })
+		_series_fs.append({ 'name' : u, 'data': _lfs })
+		_series_jp.append({ 'name' : u, 'data': list(val.l_jobprogress) })
+
+	for u in d['view_list']:
+		if u != 'TOTAL':
+			continue
+
 		val = g_users[u]
 
 		_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
 		_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 
-		_series_tj.append({ 'name' : u, 'data': _ltj })
-		_series_rj.append({ 'name' : u, 'data': _lrj })
+		_series_tj.append({ 'name' : u, 'data': _ltj, 'zIndex': 0 })
+		_series_rj.append({ 'name' : u, 'data': _lrj, 'zIndex': 0 })
 
-		if u != 'TOTAL':
-			_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
-			_series_fs.append({ 'name' : u, 'data': _lfs })
-			_series_jp.append({ 'name' : u, 'data': list(val.l_jobprogress) })
+		break
 
 	chart_tj = format_time_plot('Total jobs', xdata=_series_ts, ydata=_series_tj)
 	chart_rj = format_time_plot('Running jobs', xdata=_series_ts, ydata=_series_rj)
 	chart_fs = format_time_plot('Fair share', xdata=_series_ts, ydata=_series_fs)
 	chart_jp = format_scatter_plot('Jobs race', xdata=_series_ts, ydata=_series_jp)
 
-	#aaa = prepare_highcharts_data('line', 'Fair Share', 'time', 'fs', _series_ts, _series_tj)
-	print(chart_tj)
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
 
 	return render(request, 'batch_monitor/monitor.html', d)
@@ -150,7 +98,10 @@ def monitor(request, farm_id):
 
 def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 	chart = {
-		'chart':{ 'type': 'line'},
+		'chart':{
+			'type': 'line',
+			'zoomType': 'x',
+			},
 		'title': {
 			'text': title},
 		'xAxis': {
@@ -162,10 +113,25 @@ def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 				'day' : '%e. %b', }
 			},
 		'yAxis': {
-				'title': { 'text': ylabel},
-				},
-		'series': ydata
+			'title': { 'text': ylabel},
+			},
+		'series': ydata,
+		'rangeSelector' : {
+			'buttons': [{
+				'type': 'minute',
+				'count': 60,
+				'text': '1h'
+			}, {
+				'type': 'minute',
+				'count': 180,
+				'text': '3h'
+			}, {
+				'type': 'all',
+				'text': 'All'
+			}]
+			}
 		}
+
 	return chart
 
 def format_scatter_plot(title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
@@ -211,7 +177,6 @@ def prepare_highcharts_data(chart, title, xaxis, yaxis, xdata, ydata, aux=None):
 		_var = { 'title': { 'text': yaxis} }
 		result['yAxis'] = _var
 
-	print(type(xdata))
 	if type(xdata) is list:
 		result['xAxis']['collection'] = xdata
 

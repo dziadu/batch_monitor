@@ -76,7 +76,6 @@ def show_charts(chart_list=None, render_to=''):
 		for hco, render_to in izip_longest(chart_list, render_to_list):
 			#if render_to:
 				#hco['chart']['renderTo'] = render_to
-			print(hco)
 			embed_script += tpl_embed_script % (render_to, simplejson.dumps(hco, use_decimal=True))
 	else:
 		embed_script = tpl_embed_script %((), "")

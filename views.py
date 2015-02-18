@@ -109,8 +109,7 @@ def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 				'day' : '%e. %b', } },
 		'yAxis': {
 			'title': { 'text': ylabel },
-			'setExtremes': {
-				'min': 0, }
+			'floor': 0,
 			},
 		'series': ydata,
 		'rangeSelector' : {

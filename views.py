@@ -78,8 +78,8 @@ def monitor(request, farm_id):
 			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 
-			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': 0 })
-			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': 0 })
+			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1 })
+			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1 })
 
 			break
 

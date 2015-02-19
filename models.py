@@ -15,7 +15,8 @@ class TimeData():
 		self.ts = deque(maxlen=12 * 60 * 1)
 
 class UserData():
-	def __init__(self):
+	def __init__(self, name):
+		self.name = name
 		self.colsize = 12 * 60 * 1
 		self.viscnt = 0
 		self.q_njobsT = deque(maxlen=self.colsize)

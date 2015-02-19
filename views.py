@@ -55,7 +55,7 @@ def monitor(request, farm_id):
 	_vl = d['view_list']
 	if _vl is not None:
 		for u in _vl:
-			if u == 'TOTAL':
+			if u == 'ALL':
 				continue
 
 			val = g_users[u]
@@ -64,13 +64,13 @@ def monitor(request, farm_id):
 			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 			_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
 
-			_series_tj.append({ 'name' : u, 'data': _ltj })
-			_series_rj.append({ 'name' : u, 'data': _lrj })
-			_series_fs.append({ 'name' : u, 'data': _lfs })
-			_series_jp.append({ 'name' : u, 'data': list(val.l_jobprogress) })
+			_series_tj.append({ 'name' : val.name, 'data': _ltj })
+			_series_rj.append({ 'name' : val.name, 'data': _lrj })
+			_series_fs.append({ 'name' : val.name, 'data': _lfs })
+			_series_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress) })
 
 		for u in _vl:
-			if u != 'TOTAL':
+			if u != 'ALL':
 				continue
 
 			val = g_users[u]
@@ -78,8 +78,8 @@ def monitor(request, farm_id):
 			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 
-			_series_tj.append({ 'name' : u, 'data': _ltj, 'zIndex': 0 })
-			_series_rj.append({ 'name' : u, 'data': _lrj, 'zIndex': 0 })
+			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': 0 })
+			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': 0 })
 
 			break
 

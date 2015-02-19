@@ -73,7 +73,7 @@ def parse_diagnose(data):
 
 				if _uname not in g_users:
 					print("Adding user " + _uname)
-					g_users[_uname] = UserData()
+					g_users[_uname] = UserData(_uname)
 
 				_fair = float(words[1])
 				g_users[_uname].clear()
@@ -153,16 +153,16 @@ def parse_farm(farm):
 	g_users = cache.get("user_list", None)
 	if g_users is None:
 		g_users = dict()
-		g_users[u'TOTAL'] = UserData()
+		g_users['ALL'] = UserData('All users')
 
-	g_user_total = g_users[u'TOTAL']
+	g_user_total = g_users['ALL']
 	g_user_total.clear()
 
 	parse_diagnose(dia_out)
 	parse_qstat(qst_out)
 
 	del g_view_list[:]
-	g_view_list.append(u'TOTAL')
+	g_view_list.append('ALL')
 
 	for u in g_users.keys():
 		g_users[u].fill()
@@ -170,7 +170,7 @@ def parse_farm(farm):
 		val = g_users[u]
 
 		if val.viscnt > 0:
-			if u != u'TOTAL':
+			if u != 'ALL':
 				g_view_list.append(u)
 
 	cache.set("time_stamp", g_ts)

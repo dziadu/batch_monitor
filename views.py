@@ -141,6 +141,7 @@ def format_scatter_plot(title, xdata, ydata, xlabel='Requested time [min]', ylab
 			},
 		'yAxis': {
 				'title': { 'text': ylabel},
+				'floor': 0,
 				},
 		'series': ydata
 		}

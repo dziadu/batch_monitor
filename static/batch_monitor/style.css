@@ -8,6 +8,7 @@ div#top-links {
 	background-color: #445566;
 	color: white;
 	padding: 1px;
+/* 	height: 5%; */
 }
 
 #top-links a {
@@ -36,6 +37,6 @@ div.chart {
 	display: inline-block;
 	border: 1px solid black;
 	width: 49%;
-	height: 45%;
+	height: 47%;
 	margin-top: 1px;
 }

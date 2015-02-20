@@ -9,6 +9,7 @@ from django.views import generic
 
 from batch_monitor.models import BatchHostSettings
 
+import json
 import batch_monitor.update
 
 from chartit import DataPool, Chart
@@ -31,14 +32,45 @@ def monitor(request, farm_id):
 
 	d = dict()
 	d['farm'] = farm
-	d['view_list'] = cache.get("view_list")
 
-	srs_tj = []
-	srs_rj = []
-	srs_fs = []
-	srs_jp = []
+	chart_tj = cache.get('f_data_tj', None)
+	chart_rj = cache.get('f_data_rj', None)
+	chart_fs = cache.get('f_data_fs', None)
+	chart_jp = cache.get('f_data_jp', None)
 
-	terms = dict()
+	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
+
+	return render(request, 'batch_monitor/monitor.html', d)
+
+def monitor_from(request, farm_id, data_type, last_ts):
+	farm = get_object_or_404(BatchHostSettings, id=farm_id)
+	print(data_type)
+	if data_type == "tj":
+		response_data = cache.get('data_tj', None)
+	elif data_type == "rj":
+		response_data = cache.get('data_rj', None)
+	elif data_type == "fs":
+		response_data = cache.get('data_fs', None)
+	elif data_type == "jp":
+		response_data = cache.get('data_jp', None)
+	else:
+		response_data = None
+
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+def update(request, farm_id):
+	farm = get_object_or_404(BatchHostSettings, id=farm_id)
+
+	batch_monitor.update.parse_farm(farm)
+
+	d = dict()
+	d['farm'] = farm
+
+	prepare_data()
+
+	return render(request, 'batch_monitor/update.html', d)
+
+def prepare_data():
 
 	_series_ts = []
 	_series_tj = []
@@ -47,12 +79,13 @@ def monitor(request, farm_id):
 	_series_jp = []
 
 	g_ts = cache.get("time_stamp", None)
+
 	if g_ts is not None:
 		_series_ts = list(g_ts.ts)
 
 	g_users = cache.get("user_list", None)
 
-	_vl = d['view_list']
+	_vl = cache.get('view_list', None)
 	if _vl is not None:
 		for u in _vl:
 			if u == 'ALL':
@@ -88,9 +121,15 @@ def monitor(request, farm_id):
 	chart_fs = format_time_plot('Fair share', xdata=_series_ts, ydata=_series_fs)
 	chart_jp = format_scatter_plot('Jobs race', xdata=_series_ts, ydata=_series_jp)
 
-	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
+	cache.set('data_tj', _series_tj)
+	cache.set('data_rj', _series_rj)
+	cache.set('data_fs', _series_fs)
+	cache.set('data_jp', _series_jp)
 
-	return render(request, 'batch_monitor/monitor.html', d)
+	cache.set('f_data_tj', chart_tj)
+	cache.set('f_data_rj', chart_rj)
+	cache.set('f_data_fs', chart_fs)
+	cache.set('f_data_jp', chart_jp)
 
 def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 	chart = {
@@ -181,13 +220,3 @@ def prepare_highcharts_data(chart, title, xaxis, yaxis, xdata, ydata, aux=None):
 	result['series'] = _series
 
 	return result
-
-def update(request, farm_id):
-    farm = get_object_or_404(BatchHostSettings, id=farm_id)
-
-    batch_monitor.update.parse_farm(farm)
-
-    d = dict()
-    d['farm'] = farm
-
-    return render(request, 'batch_monitor/update.html', d)

@@ -152,7 +152,7 @@ def parse_farm(farm):
 
 	g_users = cache.get("user_list", None)
 	if g_users is None:
-		g_users = dict()
+		g_users = collections.OrderedDict()
 		g_users['ALL'] = UserData('All users')
 
 	g_user_total = g_users['ALL']

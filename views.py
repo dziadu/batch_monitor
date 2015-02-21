@@ -133,15 +133,16 @@ def prepare_data(farm):
 				continue
 
 			val = g_users[u]
+			idx = g_users.keys().index(u)
 
 			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 			_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
 
-			_series_tj.append({ 'name' : val.name, 'data': _ltj })
-			_series_rj.append({ 'name' : val.name, 'data': _lrj })
-			_series_fs.append({ 'name' : val.name, 'data': _lfs })
-			_series_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress) })
+			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'index': idx })
+			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'index': idx })
+			_series_fs.append({ 'name' : val.name, 'data': _lfs, 'index': idx })
+			_series_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx })
 
 		for u in _vl:
 			if u != 'ALL':
@@ -152,8 +153,8 @@ def prepare_data(farm):
 			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
 
-			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1 })
-			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1 })
+			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999 })
+			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999 })
 
 			break
 

@@ -16,6 +16,8 @@ from chartit import DataPool, Chart
 
 from datetime import datetime
 
+from decorators import json_response
+
 class IndexView(generic.ListView):
     template_name = 'batch_monitor/index.html'
     context_object_name = 'farms_list'
@@ -38,13 +40,35 @@ def monitor(request, farm_id):
 	chart_fs = cache.get('f_data_fs', None)
 	chart_jp = cache.get('f_data_jp', None)
 
+	if chart_tj is None:
+		prepare_data()
+
+	chart_tj = cache.get('f_data_tj', None)
+	chart_rj = cache.get('f_data_rj', None)
+	chart_fs = cache.get('f_data_fs', None)
+	chart_jp = cache.get('f_data_jp', None)
+
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
 
 	return render(request, 'batch_monitor/monitor.html', d)
 
-def monitor_from(request, farm_id, data_type, last_ts):
+@json_response
+def jsonreq(request, farm_id, data_type):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
-	print(data_type)
+
+	g_ts = cache.get("time_stamp", None)
+
+	if 'lastts' in request.REQUEST:
+		try:
+			last_ts = int(request.REQUEST['lastts'])
+		except ValueError:
+			last_ts = 0
+	else:
+		last_ts = 0
+
+	if g_ts is None:
+		return None
+
 	if data_type == "tj":
 		response_data = cache.get('data_tj', None)
 	elif data_type == "rj":
@@ -53,10 +77,28 @@ def monitor_from(request, farm_id, data_type, last_ts):
 		response_data = cache.get('data_fs', None)
 	elif data_type == "jp":
 		response_data = cache.get('data_jp', None)
+		return { 'result': response_data }
 	else:
 		response_data = None
 
-	return HttpResponse(json.dumps(response_data), content_type="application/json")
+	if response_data is None:
+		return None
+
+	lt = int(last_ts)
+	if lt == 0:
+		return { 'full': g_ts.colsize, 'result': response_data }
+
+	_data = response_data[0]['data']
+	_len = len(_data)
+
+	for i in xrange(_len):
+		if _data[i][0] > lt:
+			_response_data = response_data
+			for j in xrange(len(response_data)):
+				_response_data[j]['data'] = response_data[j]['data'][i:_len]
+			return { 'limit': g_ts.colsize, 'result': _response_data }
+
+	return None
 
 def update(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
@@ -71,7 +113,6 @@ def update(request, farm_id):
 	return render(request, 'batch_monitor/update.html', d)
 
 def prepare_data():
-
 	_series_ts = []
 	_series_tj = []
 	_series_rj = []
@@ -116,10 +157,10 @@ def prepare_data():
 
 			break
 
-	chart_tj = format_time_plot('Total jobs', xdata=_series_ts, ydata=_series_tj)
-	chart_rj = format_time_plot('Running jobs', xdata=_series_ts, ydata=_series_rj)
-	chart_fs = format_time_plot('Fair share', xdata=_series_ts, ydata=_series_fs)
-	chart_jp = format_scatter_plot('Jobs race', xdata=_series_ts, ydata=_series_jp)
+	chart_tj = format_time_plot('tj', 'Total jobs', xdata=_series_ts, ydata=_series_tj)
+	chart_rj = format_time_plot('rj', 'Running jobs', xdata=_series_ts, ydata=_series_rj)
+	chart_fs = format_time_plot('fs', 'Fair share', xdata=_series_ts, ydata=_series_fs)
+	chart_jp = format_scatter_plot('jp', 'Jobs race', xdata=_series_ts, ydata=_series_jp)
 
 	cache.set('data_tj', _series_tj)
 	cache.set('data_rj', _series_rj)
@@ -131,11 +172,13 @@ def prepare_data():
 	cache.set('f_data_fs', chart_fs)
 	cache.set('f_data_jp', chart_jp)
 
-def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
+def format_time_plot(chart_type, title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
 			'type': 'line',
-			'zoomType': 'x' },
+			'zoomType': 'x',
+			'events': {
+				'load': "$@#function() { time_chart_updater(this, '" + chart_type + "')}#@$", }, },
 		'title': {
 			'text': title },
 		'xAxis': {
@@ -145,33 +188,22 @@ def format_time_plot(title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 				'text': xlabel },
 			'dateTimeLabelFormats' : {
 				'hour' : '%H:%M',
-				'day' : '%e. %b', } },
+				'day' : '%e. %b', }, },
 		'yAxis': {
 			'title': { 'text': ylabel },
 			'floor': 0,
 			},
-		'series': ydata,
-		'rangeSelector' : {
-			'buttons': [{
-				'type': 'minute',
-				'count': 60,
-				'text': '1h'
-			}, {
-				'type': 'minute',
-				'count': 180,
-				'text': '3h'
-			}, {
-				'type': 'all',
-				'text': 'All'
-			}]
-			}
+		#'series': ydata
 		}
 
 	return chart
 
-def format_scatter_plot(title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
+def format_scatter_plot(chart_type, title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
 	chart = {
-		'chart':{ 'type': 'scatter'},
+		'chart':{
+			'type': 'scatter',
+			'events': {
+				'load': "$@#function() { scatter_chart_updater(this, '" + chart_type + "')}#@$", }, },
 		'title': {
 			'text': title},
 		'xAxis': {
@@ -182,7 +214,7 @@ def format_scatter_plot(title, xdata, ydata, xlabel='Requested time [min]', ylab
 				'title': { 'text': ylabel},
 				'floor': 0,
 				},
-		'series': ydata
+		#'series': ydata
 		}
 	return chart
 

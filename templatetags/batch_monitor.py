@@ -1,11 +1,13 @@
 from itertools import izip_longest
 
 from django import template
+import json
 import simplejson
 from django.utils.safestring import mark_safe
 from django.conf import settings
 import posixpath
 
+from ..hacks import js_call_extractor
 #from ..charts import Chart, PivotChart
 
 #try:
@@ -55,6 +57,7 @@ def show_charts(chart_list=None, render_to=''):
 
 	opening_embed_script = (
 		'<script src="http://code.highcharts.com/highcharts.js"></script>\n'
+		'<script src="http://code.highcharts.com/modules/exporting.js"></script>\n'
 		'<script src="http://code.highcharts.com/modules/no-data-to-display.js"></script>\n'
 		'<script type="text/javascript">\n'
 		'Highcharts.setOptions({\n'
@@ -82,7 +85,10 @@ def show_charts(chart_list=None, render_to=''):
 		for hco, render_to in izip_longest(chart_list, render_to_list):
 			#if render_to:
 				#hco['chart']['renderTo'] = render_to
-			embed_script += tpl_embed_script % (render_to, simplejson.dumps(hco, use_decimal=True))
+			#embed_script += tpl_embed_script % (render_to, simplejson.dumps(hco, use_decimal=True))
+			jsdump = js_call_extractor(json.dumps(hco))
+			
+			embed_script += tpl_embed_script % (render_to, jsdump)
 	else:
 		embed_script = tpl_embed_script %((), "")
 

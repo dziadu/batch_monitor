@@ -11,28 +11,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'batch_monitor/style.css' %}" media="screen" />
 <link rel="stylesheet" type="text/css" href="{% static 'batch_monitor/mobile.css' %}" media="only screen and (max-width: 700px), only screen and (max-device-width: 700px)" />
 
-<script type="text/javascript">
-var reloading;
+<script type="text/javascript" src="{% static 'batch_monitor/functions.js' %}"></script>
 
-function checkReloading() {
-    if (window.location.hash=="#autoreload") {
-        reloading=setTimeout("window.location.reload();", 60000);
-        document.getElementById("reloadCB").checked=true;
-    }
-}
-
-function toggleAutoRefresh(cb) {
-    if (cb.checked) {
-        window.location.replace("#autoreload");
-        reloading=setTimeout("window.location.reload();", 60000);
-    } else {
-        window.location.replace("#");
-        clearTimeout(reloading);
-    }
-}
-
-window.onload=checkReloading;
-</script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 {{ charts|show_charts:"container_tj,container_rj,container_fs,container_jp" }}
@@ -47,8 +27,6 @@ window.onload=checkReloading;
 <li>Monitoring farm <emph>{{ farm.name }}</emph></li>
 |
 <li><a href="mailto:rafal.lalik@ph.tum.de?subject=FarmMonitor:">Report problem</a></li>
-|
-<li><input type="checkbox" onclick="toggleAutoRefresh(this);" id="reloadCB"> Auto Refresh 60s</li>
 </ul>
 </div>
 
@@ -60,6 +38,7 @@ window.onload=checkReloading;
 <div id='container_fs' class="chart"> Chart will be rendered here </div>
 
 <div id='container_jp' class="chart"> Chart will be rendered here </div>
+
 </div>
 
 </body>

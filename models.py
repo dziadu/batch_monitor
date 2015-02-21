@@ -10,14 +10,18 @@ class BatchHostSettings(models.Model):
 	port = models.IntegerField(default=22)
 	sshpub = models.TextField()
 
+deque_len = 12 * 60 * 1
+#deque_len = 10
+
 class TimeData():
 	def __init__(self):
-		self.ts = deque(maxlen=12 * 60 * 1)
+		self.colsize = deque_len
+		self.ts = deque(maxlen=self.colsize)
 
 class UserData():
 	def __init__(self, name):
 		self.name = name
-		self.colsize = 12 * 60 * 1
+		self.colsize = deque_len
 		self.viscnt = 0
 		self.q_njobsT = deque(maxlen=self.colsize)
 		self.q_njobsR = deque(maxlen=self.colsize)

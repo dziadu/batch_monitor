@@ -15,6 +15,7 @@ function time_chart_updater(chart, chart_type) {
 	// set up the updating of the chart each second
 
 	setInterval(function() {
+		console.log("Hit to " + chart_type)
 		//console.log("* Chart = " + chart)
 		//console.log(chart)
 		//console.log("* Series = " + chart.series)
@@ -33,16 +34,16 @@ function time_chart_updater(chart, chart_type) {
 		else
 			lastts=null
 
-		$.getJSON('http://localhost:8000/monitor/1/new/'+chart_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
+		$.getJSON('/monitor/1/new/'+chart_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
 			if (jsondata == null)
-				return time_chart_updater;
+				return
 
 			//console.log("============================================")
 			//console.log(jsondata)
 
 			var s_len = jsondata.result.length;
 			if (s_len == 0)
-				return time_chart_updater;
+				return;
 			//console.log(" JSON res len == " + jsondata.result.length)
 
 			var s_len = chart.series.length;
@@ -55,7 +56,7 @@ function time_chart_updater(chart, chart_type) {
 					//console.log("Updating " + chart.series[i].name);
 					for (j = 0; j < res[0].data.length; j++) {
 // 						console.log("Series length before = " + chart.series[i].data.length)
-						chart.series[i].addPoint(res[0].data[j], true, (chart.series[i].data.length >= parseInt(jsondata.limit)) );
+						chart.series[i].addPoint(res[0].data[j], false, (chart.series[i].data.length >= parseInt(jsondata.limit)) );
 // 						console.log("Series length after = " + chart.series[i].data.length)
 						//console.log(" Adding " + res[0].data[j])
 						//console.log(" is full? " + jsondata.full)
@@ -77,9 +78,9 @@ function time_chart_updater(chart, chart_type) {
 				//console.log("Adding " + jsondata.result[i].name);
 				chart.addSeries(jsondata.result[i]);
 			}
+			chart.redraw();
 		});
-		return time_chart_updater;
-	}(), 60000);
+	}, 60000);
 }
 
 function scatter_chart_updater(chart, chart_type) {
@@ -104,16 +105,16 @@ function scatter_chart_updater(chart, chart_type) {
 // 		else
 // 			lastts=null
 
-		$.getJSON('http://localhost:8000/monitor/1/new/'+chart_type+'/?callback=?', function(jsondata) {
+		$.getJSON('/monitor/1/new/'+chart_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
-				return scatter_chart_updater;
+				return
 
 			//console.log("============================================")
 			//console.log(jsondata)
 
 			var s_len = jsondata.result.length;
 			if (s_len == 0)
-				return scatter_chart_updater;
+				return;
 			//console.log(" JSON res len == " + jsondata.result.length)
 
 			var s_len = chart.series.length;
@@ -149,6 +150,5 @@ function scatter_chart_updater(chart, chart_type) {
 				chart.addSeries(jsondata.result[i]);
 			}
 		});
-		return scatter_chart_updater;
-	}(), 60000);
+	}, 60000);
 }

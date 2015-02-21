@@ -91,11 +91,11 @@ def jsonreq(request, farm_id, data_type):
 	_data = response_data[0]['data']
 	_len = len(_data)
 
-	for i in xrange(_len):
-		if _data[i][0] > lt:
+	for i in reversed(xrange(_len)):
+		if _data[i][0] <= lt:
 			_response_data = response_data
 			for j in xrange(len(response_data)):
-				_response_data[j]['data'] = response_data[j]['data'][i:_len]
+				_response_data[j]['data'] = response_data[j]['data'][i+1:_len]
 			return { 'limit': g_ts.colsize, 'result': _response_data }
 
 	return None
@@ -196,7 +196,7 @@ def format_time_plot(chart_type, title, xdata, ydata, xlabel='Time', ylabel='Job
 			'title': { 'text': ylabel },
 			'floor': 0,
 			},
-		#'series': ydata
+		'series': ydata
 		}
 
 	return chart
@@ -219,8 +219,9 @@ def format_scatter_plot(chart_type, title, xdata, ydata, xlabel='Requested time 
 		'yAxis': {
 				'title': { 'text': ylabel},
 				'floor': 0,
+				'roof': 1,
 				},
-		#'series': ydata
+		'series': ydata
 		}
 	return chart
 

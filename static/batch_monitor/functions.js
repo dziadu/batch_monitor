@@ -53,7 +53,7 @@ function time_chart_updater(chart, chart_type) {
 		});
 	}
 
-	f();
+// 	f();
 	setInterval(function() {f()}, 60000);
 }
 
@@ -89,6 +89,6 @@ function scatter_chart_updater(chart, chart_type) {
 		});
 	}
 
-	f();
+// 	f();
 	setInterval(function() {f()}, 60000);
 }

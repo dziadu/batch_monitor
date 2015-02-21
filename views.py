@@ -178,7 +178,10 @@ def format_time_plot(chart_type, title, xdata, ydata, xlabel='Time', ylabel='Job
 			'type': 'line',
 			'zoomType': 'x',
 			'events': {
-				'load': "$@#function() { time_chart_updater(this, '" + chart_type + "')}#@$", }, },
+				'load': "$@#function() {"
+					" time_chart_updater(this, '" + chart_type + "');"
+					" }#@$"
+					, } },
 		'title': {
 			'text': title },
 		'xAxis': {
@@ -203,7 +206,10 @@ def format_scatter_plot(chart_type, title, xdata, ydata, xlabel='Requested time 
 		'chart':{
 			'type': 'scatter',
 			'events': {
-				'load': "$@#function() { scatter_chart_updater(this, '" + chart_type + "')}#@$", }, },
+				'load': "$@#function() {"
+					" scatter_chart_updater(this, '" + chart_type + "');"
+					" }#@$"
+					, } },
 		'title': {
 			'text': title},
 		'xAxis': {

@@ -76,19 +76,14 @@ def show_charts(chart_list=None, render_to=''):
 
 	no_data_script = '<script src="http://code.highcharts.com/no-data-to-display.js"></script>\n'
 
-	#aux = None;
-
 	embed_script = ""
 
 	if chart_list is not None:
 		render_to_list = [s.strip() for s in render_to.split(',')]
 		for hco, render_to in izip_longest(chart_list, render_to_list):
-			#if render_to:
-				#hco['chart']['renderTo'] = render_to
-			#embed_script += tpl_embed_script % (render_to, simplejson.dumps(hco, use_decimal=True))
 			jsdump = js_call_extractor(json.dumps(hco))
-			
-			embed_script += tpl_embed_script % (render_to, jsdump)
+
+			embed_script += tpl_embed_script % (render_to, jsdump )
 	else:
 		embed_script = tpl_embed_script %((), "")
 

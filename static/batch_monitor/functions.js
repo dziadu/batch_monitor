@@ -51,9 +51,11 @@ function time_chart_updater(farm, chart, chart_type) {
 			}
 			chart.redraw();
 		});
+		
+		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
 	setInterval(function() {f()}, 60000);
 }
 
@@ -87,8 +89,20 @@ function scatter_chart_updater(farm, chart, chart_type) {
 				chart.addSeries(jsondata.result[i]);
 			}
 		});
+
+		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
 	setInterval(function() {f()}, 60000);
+}
+
+function chart_time_subtitle(chart) {
+	var d = new Date();
+	var now = "Last update: " + d.toLocaleTimeString()
+	d.setMinutes(d.getMinutes() + 1)
+	var later = "Next update: " + d.toLocaleTimeString()
+	var subtitle = now + " | " + later
+
+	chart.setTitle(null, { text : subtitle })
 }

@@ -11,7 +11,7 @@ function getObjects(obj, key, val) {
     return objects;
 }
 
-function time_chart_updater(chart, chart_type) {
+function time_chart_updater(farm, chart, chart_type) {
 	// set up the updating of the chart each second
 
 	var f = function() {
@@ -23,7 +23,7 @@ function time_chart_updater(chart, chart_type) {
 		else
 			lastts=null
 
-		$.getJSON('/monitor/1/new/'+chart_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
+		$.getJSON('/monitor/'+farm+'/new/'+chart_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -57,11 +57,11 @@ function time_chart_updater(chart, chart_type) {
 	setInterval(function() {f()}, 60000);
 }
 
-function scatter_chart_updater(chart, chart_type) {
+function scatter_chart_updater(farm, chart, chart_type) {
 	// set up the updating of the chart each second
 
 	var f = function() {
-		$.getJSON('/monitor/1/new/'+chart_type+'/?callback=?', function(jsondata) {
+		$.getJSON('/monitor/'+farm+'/new/'+chart_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 

@@ -41,7 +41,7 @@ def monitor(request, farm_id):
 	chart_jp = cache.get('f_data_jp', None)
 
 	if chart_tj is None:
-		prepare_data()
+		prepare_data(farm_id)
 
 	chart_tj = cache.get('f_data_tj', None)
 	chart_rj = cache.get('f_data_rj', None)
@@ -108,11 +108,11 @@ def update(request, farm_id):
 	d = dict()
 	d['farm'] = farm
 
-	prepare_data()
+	prepare_data(farm_id)
 
 	return render(request, 'batch_monitor/update.html', d)
 
-def prepare_data():
+def prepare_data(farm):
 	_series_ts = []
 	_series_tj = []
 	_series_rj = []
@@ -157,10 +157,10 @@ def prepare_data():
 
 			break
 
-	chart_tj = format_time_plot('tj', 'Total jobs', xdata=_series_ts, ydata=_series_tj)
-	chart_rj = format_time_plot('rj', 'Running jobs', xdata=_series_ts, ydata=_series_rj)
-	chart_fs = format_time_plot('fs', 'Fair share', xdata=_series_ts, ydata=_series_fs)
-	chart_jp = format_scatter_plot('jp', 'Jobs race', xdata=_series_ts, ydata=_series_jp)
+	chart_tj = format_time_plot(farm, 'tj', 'Total jobs', xdata=_series_ts, ydata=_series_tj)
+	chart_rj = format_time_plot(farm, 'rj', 'Running jobs', xdata=_series_ts, ydata=_series_rj)
+	chart_fs = format_time_plot(farm, 'fs', 'Fair share', xdata=_series_ts, ydata=_series_fs)
+	chart_jp = format_scatter_plot(farm, 'jp', 'Jobs race', xdata=_series_ts, ydata=_series_jp)
 
 	cache.set('data_tj', _series_tj)
 	cache.set('data_rj', _series_rj)
@@ -172,14 +172,14 @@ def prepare_data():
 	cache.set('f_data_fs', chart_fs)
 	cache.set('f_data_jp', chart_jp)
 
-def format_time_plot(chart_type, title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
+def format_time_plot(farm, chart_type, title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
 			'type': 'line',
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
-					" time_chart_updater(this, '" + chart_type + "');"
+					" time_chart_updater(" + farm + ", this, '" + chart_type + "');"
 					" }#@$"
 					, } },
 		'title': {
@@ -201,13 +201,13 @@ def format_time_plot(chart_type, title, xdata, ydata, xlabel='Time', ylabel='Job
 
 	return chart
 
-def format_scatter_plot(chart_type, title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
+def format_scatter_plot(farm, chart_type, title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
 	chart = {
 		'chart':{
 			'type': 'scatter',
 			'events': {
 				'load': "$@#function() {"
-					" scatter_chart_updater(this, '" + chart_type + "');"
+					" scatter_chart_updater(" + farm + ", this, '" + chart_type + "');"
 					" }#@$"
 					, } },
 		'title': {

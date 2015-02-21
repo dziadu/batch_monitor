@@ -219,7 +219,7 @@ def format_scatter_plot(farm, chart_type, title, xdata, ydata, xlabel='Requested
 		'yAxis': {
 				'title': { 'text': ylabel},
 				'floor': 0,
-				'roof': 1,
+				'ceiling': 1,
 				},
 		'series': ydata
 		}

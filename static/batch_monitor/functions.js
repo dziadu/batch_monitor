@@ -114,7 +114,7 @@ function scatter_chart_updater(farm, chart, chart_type) {
 
 // 	f();
 	chart_time_subtitle(chart)
-	setInterval(function() {f()}, 5000);
+	setInterval(function() {f()}, 60000);
 }
 
 function chart_time_subtitle(chart) {

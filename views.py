@@ -84,11 +84,8 @@ def jsonreq(request, farm_id, data_type):
 		response_data = cache.get('data_fs', None)
 	elif data_type == "jp":
 		response_data = cache.get('data_jp', None)
-		print(cache.get('data_qj', None))
-		print(cache.get('data_hj', None))
 		return {
 			'result': response_data,
-			#'result': [],
 			'pie': [{
 					'name' : label_queued_jobs,
 					'data': cache.get('data_qj', None),

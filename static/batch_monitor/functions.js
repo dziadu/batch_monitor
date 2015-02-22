@@ -55,7 +55,8 @@ function time_chart_updater(farm, chart, chart_type) {
 		chart_time_subtitle(chart)
 	}
 
-	f();
+// 	f();
+	chart_time_subtitle(chart)
 	setInterval(function() {f()}, 60000);
 }
 
@@ -83,16 +84,21 @@ function scatter_chart_updater(farm, chart, chart_type) {
 				else if (res.length > 1) { }
 				else {
 					if (chart.series[i].type == 'pie') {
-						console.log(chart.series[i].type)
-						console.log(res.name)
-						console.log(res.type)
 						var res_pie = getObjects(jsondata.pie, 'name', chart.series[i].name)
-						if (chart.series[i].name == res_pie[0].name)
-							chart.series[i].setData(res[0].data, false)
-						else
+						if (res_pie.length == 1) {
+							chart.series[i].setData(res_pie[0].data)
+							var d_len = res_pie[0].data.length
+							for (j = 0; j < d_len; j++)
+								chart.series[i].data[j].color = Highcharts.getOptions().colors[ res_pie[0].data[j]._color ]
+							jsondata.pie.splice(jsondata.pie.indexOf(res_pie[0]), 1)
+						} else {
+							console.log("++= WTF 1 +++")
 							chart.series[i].data = null
-					} else
+						}
+					} else {
+						console.log("++= WTF 2 +++")
 						chart.series[i].setData([])
+					}
 				}
 			}
 
@@ -106,8 +112,9 @@ function scatter_chart_updater(farm, chart, chart_type) {
 		chart_time_subtitle(chart)
 	}
 
-	f();
-	setInterval(function() {f()}, 60000);
+// 	f();
+	chart_time_subtitle(chart)
+	setInterval(function() {f()}, 5000);
 }
 
 function chart_time_subtitle(chart) {

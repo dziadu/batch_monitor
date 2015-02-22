@@ -18,6 +18,13 @@ from datetime import datetime
 
 from decorators import json_response
 
+label_total_jobs = 'Total jobs'
+label_running_jobs = 'Running jobs'
+label_queued_jobs = 'Queued jobs'
+label_holded_jobs = 'Holded jobs'
+label_jobs_race = 'Jobs race'
+label_fair_share = 'Fair share rank'
+
 class IndexView(generic.ListView):
 	template_name = 'batch_monitor/index.html'
 	context_object_name = 'farms_list'
@@ -77,15 +84,18 @@ def jsonreq(request, farm_id, data_type):
 		response_data = cache.get('data_fs', None)
 	elif data_type == "jp":
 		response_data = cache.get('data_jp', None)
+		print(cache.get('data_qj', None))
+		print(cache.get('data_hj', None))
 		return {
 			'result': response_data,
+			#'result': [],
 			'pie': [{
-					'name' : 'qj',
-					'data': cache.get('data_qj', None)
+					'name' : label_queued_jobs,
+					'data': cache.get('data_qj', None),
 				},
 				{
-					'name' : 'hj',
-					'data': cache.get('data_hj', None)
+					'name' : label_holded_jobs,
+					'data': cache.get('data_hj', None),
 				}]
 			}
 	else:
@@ -164,16 +174,17 @@ def prepare_data(farm):
 
 			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'index': idx })
 			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'index': idx })
-			
+
+			col_idx = len(data_series_tj)-1
 			if _n_qj > 0:
-				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, 'index': idx })
+				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, '_color': col_idx })
 
 			if _n_hj > 0:
-				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, 'index': idx })
+				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, '_color': col_idx })
 
 			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'index': idx })
 			
-			data_group_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx, 'type': 'scatter' })
+			data_group_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx })
 
 		for u in _vl:
 			if u != 'ALL':
@@ -189,17 +200,19 @@ def prepare_data(farm):
 
 			break
 
-	chart_tj = format_time_plot(farm, 'tj', 'Total jobs', series_data=data_series_tj)
-	chart_rj = format_time_plot(farm, 'rj', 'Running jobs', series_data=data_series_rj)
-	chart_fs = format_time_plot(farm, 'fs', 'Fair share rank', series_data=data_series_fs)
+	chart_tj = format_time_plot(farm, 'tj', label_total_jobs, series_data=data_series_tj)
+	chart_rj = format_time_plot(farm, 'rj', label_running_jobs, series_data=data_series_rj)
+	chart_fs = format_time_plot(farm, 'fs', label_fair_share, series_data=data_series_fs)
 
+	print(data_group_qj)
 	if total_queued > 0:
-		pie_chart_qj = format_pie_chart('Queued jobs', data_group_qj, [ '30%', '50%' ])
+		pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
 	else:
 		pie_chart_qj = None
 
+	print(data_group_hj)
 	if total_holded > 0:
-		pie_chart_hj = format_pie_chart('Holded jobs', data_group_hj, [ '70%', '50%' ])
+		pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
 	else:
 		pie_chart_hj = None
 
@@ -212,7 +225,7 @@ def prepare_data(farm):
 	else:
 		scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
 
-	chart_jp = format_scatter_plot(farm, 'jp', 'Jobs race', data=scatter_pie_all_data)
+	chart_jp = format_scatter_plot(farm, 'jp', label_jobs_race, data=scatter_pie_all_data)
 
 	cache.set('data_tj', data_series_tj)
 	cache.set('data_rj', data_series_rj)
@@ -314,38 +327,3 @@ def format_pie_chart(title, pie_data, center, size='50%'):
 		}
 	}
 	return chart
-
-def prepare_highcharts_data(chart, title, xaxis, yaxis, xdata, ydata, aux=None):
-	result = {}
-
-	if type(chart) is dict():
-		result['chart'] = chart
-	else:
-		_var = { 'type': chart}
-		result['chart'] = _var
-
-	if type(title) is dict():
-		result['title'] = title
-	else:
-		_var = { 'text': title}
-		result['title'] = _var
-
-	if type(xaxis) is dict():
-		result['xAxis'] = xaxis
-	else:
-		_var = { 'title': { 'text': xaxis} }
-		result['xAxis'] = _var
-
-	if type(yaxis) is dict():
-		result['yAxis'] = yaxis
-	else:
-		_var = { 'title': { 'text': yaxis} }
-		result['yAxis'] = _var
-
-	if type(xdata) is list:
-		result['xAxis']['collection'] = xdata
-
-	_series = ydata
-	result['series'] = _series
-
-	return result

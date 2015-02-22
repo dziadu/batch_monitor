@@ -34,9 +34,15 @@ div#charts {
 	margin: 0 10px 0 10px;
 }
 
-div.chart {
+div.chart_box {
+	float: left;
 	display: inline-block;
-	width: 100%;
-	height: 42%;
-	margin-top: 2px;
+	width: 50%;
+}
+
+div.chart {
+	border: 1px solid black;
+/* 	width: 100%; */
+	height: 48%;
+	margin: 2px;
 }

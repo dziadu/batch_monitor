@@ -81,13 +81,26 @@ function scatter_chart_updater(farm, chart, chart_type) {
 					jsondata.result.splice(jsondata.result.indexOf(res[0]), 1)
 				}
 				else if (res.length > 1) { }
-				else { chart.series[i].setData([]) }
+				else {
+					if (chart.series[i].type == 'pie') {
+						console.log(chart.series[i].type)
+						console.log(res.name)
+						console.log(res.type)
+						var res_pie = getObjects(jsondata.pie, 'name', chart.series[i].name)
+						if (chart.series[i].name == res_pie[0].name)
+							chart.series[i].setData(res[0].data, false)
+						else
+							chart.series[i].data = null
+					} else
+						chart.series[i].setData([])
+				}
 			}
 
 			var s_len = jsondata.result.length;
 			for (i = 0; i < s_len; i++) {
 				chart.addSeries(jsondata.result[i]);
 			}
+			chart.redraw();
 		});
 
 		chart_time_subtitle(chart)

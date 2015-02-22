@@ -19,15 +19,15 @@ from datetime import datetime
 from decorators import json_response
 
 class IndexView(generic.ListView):
-    template_name = 'batch_monitor/index.html'
-    context_object_name = 'farms_list'
-    #model = BatchHostSettings
+	template_name = 'batch_monitor/index.html'
+	context_object_name = 'farms_list'
+	#model = BatchHostSettings
 
-    cache.set("foo", "bar")
+	cache.set("foo", "bar")
 
-    def get_queryset(self):
-        """ Return the last five published polls."""
-        return BatchHostSettings.objects.order_by('-name')[:5]
+	def get_queryset(self):
+		""" Return the last five published polls."""
+		return BatchHostSettings.objects.all()
 
 def monitor(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
@@ -77,7 +77,17 @@ def jsonreq(request, farm_id, data_type):
 		response_data = cache.get('data_fs', None)
 	elif data_type == "jp":
 		response_data = cache.get('data_jp', None)
-		return { 'result': response_data }
+		return {
+			'result': response_data,
+			'pie': [{
+					'name' : 'qj',
+					'data': cache.get('data_qj', None)
+				},
+				{
+					'name' : 'hj',
+					'data': cache.get('data_hj', None)
+				}]
+			}
 	else:
 		response_data = None
 
@@ -113,18 +123,24 @@ def update(request, farm_id):
 	return render(request, 'batch_monitor/update.html', d)
 
 def prepare_data(farm):
-	_series_ts = []
-	_series_tj = []
-	_series_rj = []
-	_series_fs = []
-	_series_jp = []
+	data_list_ts = []
+	data_series_tj = []
+	data_series_rj = []
+	data_group_qj = []
+	data_group_hj = []
+
+	data_series_fs = []
+	data_group_jp = []
 
 	g_ts = cache.get("time_stamp", None)
 
 	if g_ts is not None:
-		_series_ts = list(g_ts.ts)
+		data_list_ts = list(g_ts.ts)
 
 	g_users = cache.get("user_list", None)
+
+	total_queued = 0
+	total_holded = 0
 
 	_vl = cache.get('view_list', None)
 	if _vl is not None:
@@ -135,14 +151,29 @@ def prepare_data(farm):
 			val = g_users[u]
 			idx = g_users.keys().index(u)
 
-			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
-			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
-			_lfs = [list(a) for a in zip(_series_ts, list(val.q_fairshare))]
+			_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
+			_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'index': idx })
-			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'index': idx })
-			_series_fs.append({ 'name' : val.name, 'data': _lfs, 'index': idx })
-			_series_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx })
+			_n_qj = val.q_njobsQ[len(val.q_njobsQ)-1]
+			_n_hj = val.q_njobsH[len(val.q_njobsH)-1]
+
+			total_queued += _n_qj
+			total_holded += _n_hj
+
+			_lfs = [list(a) for a in zip(data_list_ts, list(val.q_fairshare))]
+
+			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'index': idx })
+			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'index': idx })
+			
+			if _n_qj > 0:
+				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, 'index': idx })
+
+			if _n_hj > 0:
+				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, 'index': idx })
+
+			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'index': idx })
+			
+			data_group_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx, 'type': 'scatter' })
 
 		for u in _vl:
 			if u != 'ALL':
@@ -150,30 +181,52 @@ def prepare_data(farm):
 
 			val = g_users[u]
 
-			_ltj = [list(a) for a in zip(_series_ts, list(val.q_njobsT))]
-			_lrj = [list(a) for a in zip(_series_ts, list(val.q_njobsR))]
+			_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
+			_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-			_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999 })
-			_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999 })
+			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999 })
+			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999 })
 
 			break
 
-	chart_tj = format_time_plot(farm, 'tj', 'Total jobs', xdata=_series_ts, ydata=_series_tj)
-	chart_rj = format_time_plot(farm, 'rj', 'Running jobs', xdata=_series_ts, ydata=_series_rj)
-	chart_fs = format_time_plot(farm, 'fs', 'Fair share', xdata=_series_ts, ydata=_series_fs)
-	chart_jp = format_scatter_plot(farm, 'jp', 'Jobs race', xdata=_series_ts, ydata=_series_jp)
+	chart_tj = format_time_plot(farm, 'tj', 'Total jobs', series_data=data_series_tj)
+	chart_rj = format_time_plot(farm, 'rj', 'Running jobs', series_data=data_series_rj)
+	chart_fs = format_time_plot(farm, 'fs', 'Fair share rank', series_data=data_series_fs)
 
-	cache.set('data_tj', _series_tj)
-	cache.set('data_rj', _series_rj)
-	cache.set('data_fs', _series_fs)
-	cache.set('data_jp', _series_jp)
+	if total_queued > 0:
+		pie_chart_qj = format_pie_chart('Queued jobs', data_group_qj, [ '30%', '50%' ])
+	else:
+		pie_chart_qj = None
+
+	if total_holded > 0:
+		pie_chart_hj = format_pie_chart('Holded jobs', data_group_hj, [ '70%', '50%' ])
+	else:
+		pie_chart_hj = None
+
+	if pie_chart_qj is None and pie_chart_hj is None:
+		scatter_pie_all_data = data_group_jp
+	elif pie_chart_qj is None:
+		scatter_pie_all_data = data_group_jp + [pie_chart_hj,]
+	elif pie_chart_hj is None:
+		scatter_pie_all_data = data_group_jp + [pie_chart_qj,]
+	else:
+		scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
+
+	chart_jp = format_scatter_plot(farm, 'jp', 'Jobs race', data=scatter_pie_all_data)
+
+	cache.set('data_tj', data_series_tj)
+	cache.set('data_rj', data_series_rj)
+	cache.set('data_qj', data_group_qj)
+	cache.set('data_hj', data_group_hj)
+	cache.set('data_fs', data_series_fs)
+	cache.set('data_jp', data_group_jp)
 
 	cache.set('f_data_tj', chart_tj)
 	cache.set('f_data_rj', chart_rj)
 	cache.set('f_data_fs', chart_fs)
 	cache.set('f_data_jp', chart_jp)
 
-def format_time_plot(farm, chart_type, title, xdata, ydata, xlabel='Time', ylabel='Jobs number'):
+def format_time_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
 			'type': 'line',
@@ -185,6 +238,8 @@ def format_time_plot(farm, chart_type, title, xdata, ydata, xlabel='Time', ylabe
 					, } },
 		'title': {
 			'text': title },
+		'subtitle': {
+			'text': ' -- ' },
 		'xAxis': {
 			'allowDecimals' : 'false',
 			'type': 'datetime',
@@ -197,12 +252,12 @@ def format_time_plot(farm, chart_type, title, xdata, ydata, xlabel='Time', ylabe
 			'title': { 'text': ylabel },
 			'floor': 0,
 			},
-		'series': ydata
+		'series': series_data
 		}
 
 	return chart
 
-def format_scatter_plot(farm, chart_type, title, xdata, ydata, xlabel='Requested time [min]', ylabel='Progress [%]'):
+def format_scatter_plot(farm, chart_type, title, data=[], xlabel='Requested time [min]', ylabel='Progress [%]'):
 	chart = {
 		'chart':{
 			'type': 'scatter',
@@ -213,17 +268,33 @@ def format_scatter_plot(farm, chart_type, title, xdata, ydata, xlabel='Requested
 					, } },
 		'title': {
 			'text': title},
+		'subtitle': {
+			'text': ' -- ' },
 		'xAxis': {
 			'allowDecimals' : 'false',
 			'title': { 'text': xlabel},
 			},
 		'yAxis': {
 				'title': { 'text': ylabel},
-				'floor': 0,
-				'ceiling': 1,
+				#'floor': 0,
+				#'ceiling': 1,
 				},
-		'series': ydata
+		'series': data,
 		}
+	return chart
+
+def format_pie_chart(title, pie_data, center, size='50%'):
+	chart = {
+		'type': 'pie',
+		'name': title,
+		'data': pie_data,
+		'center': center,
+		'size': size,
+		'showInLegend': False,
+		'dataLabels': {
+			'enabled': True
+		}
+	}
 	return chart
 
 def prepare_highcharts_data(chart, title, xaxis, yaxis, xdata, ydata, aux=None):

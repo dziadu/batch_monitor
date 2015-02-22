@@ -262,25 +262,43 @@ def format_scatter_plot(farm, chart_type, title, data=[], xlabel='Requested time
 		'chart':{
 			'type': 'scatter',
 			'events': {
-				'load': "$@#function() {"
+				'load':
+					"$@#function() {"
 					" scatter_chart_updater(" + farm + ", this, '" + chart_type + "');"
 					" }#@$"
-					, } },
+			}
+		},
 		'title': {
-			'text': title},
+			'text': title
+		},
 		'subtitle': {
-			'text': ' -- ' },
+			'text': ' -- '
+		},
 		'xAxis': {
 			'allowDecimals' : 'false',
 			'title': { 'text': xlabel},
-			},
+		},
 		'yAxis': {
-				'title': { 'text': ylabel},
-				#'floor': 0,
-				#'ceiling': 1,
-				},
+			'title': { 'text': ylabel},
+			'floor': 0,
+			'ceiling': 1,
+		},
 		'series': data,
+		'plotOptions': {
+			'pie': {
+				'allowPointSelect': True,
+				'cursor': 'pointer',
+				'dataLabels': {
+					'enabled': True,
+					'format': '<b>{point.name}</b>: {point.y}',
+					'style': {
+						'color': 'black'
+					},
+					'connectorColor': 'silver'
+				}
+			}
 		}
+	}
 	return chart
 
 def format_pie_chart(title, pie_data, center, size='50%'):

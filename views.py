@@ -42,18 +42,18 @@ def monitor(request, farm_id):
 	d = dict()
 	d['farm'] = farm
 
-	chart_tj = cache.get('f_data_tj', None)
-	chart_rj = cache.get('f_data_rj', None)
-	chart_fs = cache.get('f_data_fs', None)
-	chart_jp = cache.get('f_data_jp', None)
+	chart_tj = cache.get('chart_tj', None)
+	chart_rj = cache.get('chart_rj', None)
+	chart_fs = cache.get('chart_fs', None)
+	chart_jp = cache.get('chart_jp', None)
 
 	if chart_tj is None:
 		prepare_data(farm_id)
 
-	chart_tj = cache.get('f_data_tj', None)
-	chart_rj = cache.get('f_data_rj', None)
-	chart_fs = cache.get('f_data_fs', None)
-	chart_jp = cache.get('f_data_jp', None)
+	chart_tj = cache.get('chart_tj', None)
+	chart_rj = cache.get('chart_rj', None)
+	chart_fs = cache.get('chart_fs', None)
+	chart_jp = cache.get('chart_jp', None)
 
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
 
@@ -201,26 +201,10 @@ def prepare_data(farm):
 	chart_rj = format_time_plot(farm, 'rj', label_running_jobs, series_data=data_series_rj)
 	chart_fs = format_time_plot(farm, 'fs', label_fair_share, series_data=data_series_fs)
 
-	print(data_group_qj)
-	if total_queued > 0:
-		pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
-	else:
-		pie_chart_qj = None
+	pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
+	pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
 
-	print(data_group_hj)
-	if total_holded > 0:
-		pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
-	else:
-		pie_chart_hj = None
-
-	if pie_chart_qj is None and pie_chart_hj is None:
-		scatter_pie_all_data = data_group_jp
-	elif pie_chart_qj is None:
-		scatter_pie_all_data = data_group_jp + [pie_chart_hj,]
-	elif pie_chart_hj is None:
-		scatter_pie_all_data = data_group_jp + [pie_chart_qj,]
-	else:
-		scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
+	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
 
 	chart_jp = format_scatter_plot(farm, 'jp', label_jobs_race, data=scatter_pie_all_data)
 
@@ -231,10 +215,10 @@ def prepare_data(farm):
 	cache.set('data_fs', data_series_fs)
 	cache.set('data_jp', data_group_jp)
 
-	cache.set('f_data_tj', chart_tj)
-	cache.set('f_data_rj', chart_rj)
-	cache.set('f_data_fs', chart_fs)
-	cache.set('f_data_jp', chart_jp)
+	cache.set('chart_tj', chart_tj)
+	cache.set('chart_rj', chart_rj)
+	cache.set('chart_fs', chart_fs)
+	cache.set('chart_jp', chart_jp)
 
 def format_time_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
 	chart = {

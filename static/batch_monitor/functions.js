@@ -92,11 +92,9 @@ function scatter_chart_updater(farm, chart, chart_type) {
 								chart.series[i].data[j].color = Highcharts.getOptions().colors[ res_pie[0].data[j]._color ]
 							jsondata.pie.splice(jsondata.pie.indexOf(res_pie[0]), 1)
 						} else {
-							console.log("++= WTF 1 +++")
 							chart.series[i].data = null
 						}
 					} else {
-						console.log("++= WTF 2 +++")
 						chart.series[i].setData([])
 					}
 				}
@@ -106,6 +104,7 @@ function scatter_chart_updater(farm, chart, chart_type) {
 			for (i = 0; i < s_len; i++) {
 				chart.addSeries(jsondata.result[i]);
 			}
+
 			chart.redraw();
 		});
 

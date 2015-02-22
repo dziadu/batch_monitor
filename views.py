@@ -197,6 +197,21 @@ def prepare_data(farm):
 
 			break
 
+	cache.set('data_tj', data_series_tj)
+	cache.set('data_rj', data_series_rj)
+	cache.set('data_qj', data_group_qj)
+	cache.set('data_hj', data_group_hj)
+	cache.set('data_fs', data_series_fs)
+	cache.set('data_jp', data_group_jp)
+
+	for i in xrange(len(data_group_qj)):
+		_c = data_group_qj[i]['_color']
+		data_group_qj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
+
+	for i in xrange(len(data_group_hj)):
+		_c = data_group_hj[i]['_color']
+		data_group_hj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
+
 	chart_tj = format_time_plot(farm, 'tj', label_total_jobs, series_data=data_series_tj)
 	chart_rj = format_time_plot(farm, 'rj', label_running_jobs, series_data=data_series_rj)
 	chart_fs = format_time_plot(farm, 'fs', label_fair_share, series_data=data_series_fs)
@@ -207,13 +222,6 @@ def prepare_data(farm):
 	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
 
 	chart_jp = format_scatter_plot(farm, 'jp', label_jobs_race, data=scatter_pie_all_data)
-
-	cache.set('data_tj', data_series_tj)
-	cache.set('data_rj', data_series_rj)
-	cache.set('data_qj', data_group_qj)
-	cache.set('data_hj', data_group_hj)
-	cache.set('data_fs', data_series_fs)
-	cache.set('data_jp', data_group_jp)
 
 	cache.set('chart_tj', chart_tj)
 	cache.set('chart_rj', chart_rj)
@@ -246,7 +254,7 @@ def format_time_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel
 			'title': { 'text': ylabel },
 			'floor': 0,
 			},
-		'series': series_data
+		'series': series_data,
 		}
 
 	return chart

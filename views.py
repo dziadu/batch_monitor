@@ -36,24 +36,41 @@ class IndexView(generic.ListView):
 		""" Return the last five published polls."""
 		return BatchHostSettings.objects.all()
 
-def monitor(request, farm_id):
+#views 
+def update(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
-
+	batch_monitor.update.parse_farm(farm)
 	d = dict()
 	d['farm'] = farm
+	prepare_data(farm_id)
+	return render(request, 'batch_monitor/update.html', d)
 
-	chart_tj = cache.get('chart_tj', None)
-	chart_rj = cache.get('chart_rj', None)
-	chart_fs = cache.get('chart_fs', None)
-	chart_jp = cache.get('chart_jp', None)
+def monitor(request, farm_id):
+	farm = get_object_or_404(BatchHostSettings, id=farm_id)
+	d = dict()
+	d['farm'] = farm
+	data_series_tj = cache.get('data_tj', None)
 
-	if chart_tj is None:
+	if data_series_tj is None:
 		prepare_data(farm_id)
 
-	chart_tj = cache.get('chart_tj', None)
-	chart_rj = cache.get('chart_rj', None)
-	chart_fs = cache.get('chart_fs', None)
-	chart_jp = cache.get('chart_jp', None)
+	data_series_tj = cache.get('data_tj', None)
+	data_series_rj = cache.get('data_rj', None)
+	data_group_qj = cache.get('data_qj_f', None)
+	data_group_hj = cache.get('data_hj_f', None)
+	data_series_fs = cache.get('data_fs', None)
+	data_group_jp = cache.get('data_jp', None)
+
+	chart_tj = format_time_plot(farm_id, 'tj', label_total_jobs, series_data=data_series_tj)
+	chart_rj = format_time_plot(farm_id, 'rj', label_running_jobs, series_data=data_series_rj)
+	chart_fs = format_time_plot(farm_id, 'fs', label_fair_share, series_data=data_series_fs)
+
+	pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
+	pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
+
+	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
+
+	chart_jp = format_scatter_plot(farm_id, 'jp', label_jobs_race, data=scatter_pie_all_data)
 
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
 
@@ -117,18 +134,7 @@ def jsonreq(request, farm_id, data_type):
 
 	return None
 
-def update(request, farm_id):
-	farm = get_object_or_404(BatchHostSettings, id=farm_id)
-
-	batch_monitor.update.parse_farm(farm)
-
-	d = dict()
-	d['farm'] = farm
-
-	prepare_data(farm_id)
-
-	return render(request, 'batch_monitor/update.html', d)
-
+# tools
 def prepare_data(farm):
 	data_list_ts = []
 	data_series_tj = []
@@ -157,6 +163,7 @@ def prepare_data(farm):
 
 			val = g_users[u]
 			idx = g_users.keys().index(u)
+			col_idx = len(data_series_tj)
 
 			_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
@@ -168,32 +175,30 @@ def prepare_data(farm):
 			total_holded += _n_hj
 
 			_lfs = [list(a) for a in zip(data_list_ts, list(val.q_fairshare))]
+			_ljp = list(val.l_jobprogress)
 
-			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'index': idx })
-			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'index': idx })
+			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_group_jp.append({ 'name' : val.name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
-			col_idx = len(data_series_tj)-1
 			if _n_qj > 0:
 				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, '_color': col_idx })
-
 			if _n_hj > 0:
 				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, '_color': col_idx })
-
-			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'index': idx })
-			
-			data_group_jp.append({ 'name' : val.name, 'data': list(val.l_jobprogress), 'index': idx })
 
 		for u in _vl:
 			if u != 'ALL':
 				continue
 
 			val = g_users[u]
+			col_idx = len(data_series_tj)
 
 			_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
 			_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999 })
-			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999 })
+			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
 			break
 
@@ -212,21 +217,8 @@ def prepare_data(farm):
 		_c = data_group_hj[i]['_color']
 		data_group_hj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-	chart_tj = format_time_plot(farm, 'tj', label_total_jobs, series_data=data_series_tj)
-	chart_rj = format_time_plot(farm, 'rj', label_running_jobs, series_data=data_series_rj)
-	chart_fs = format_time_plot(farm, 'fs', label_fair_share, series_data=data_series_fs)
-
-	pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
-	pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
-
-	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
-
-	chart_jp = format_scatter_plot(farm, 'jp', label_jobs_race, data=scatter_pie_all_data)
-
-	cache.set('chart_tj', chart_tj)
-	cache.set('chart_rj', chart_rj)
-	cache.set('chart_fs', chart_fs)
-	cache.set('chart_jp', chart_jp)
+	cache.set('data_qj_f', data_group_qj)
+	cache.set('data_hj_f', data_group_hj)
 
 def format_time_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
 	chart = {

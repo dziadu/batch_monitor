@@ -15,7 +15,7 @@ deque_len = 12 * 60 * 1
 
 class TimeData():
 	def __init__(self):
-		self.col_size = deque_len
+		self.colsize = deque_len
 		self.ts = deque(maxlen=deque_len)
 
 class UserData():

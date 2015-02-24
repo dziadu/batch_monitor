@@ -15,19 +15,17 @@ deque_len = 12 * 60 * 1
 
 class TimeData():
 	def __init__(self):
-		self.colsize = deque_len
-		self.ts = deque(maxlen=self.colsize)
+		self.ts = deque(maxlen=deque_len)
 
 class UserData():
 	def __init__(self, name):
 		self.name = name
-		self.colsize = deque_len
 		self.viscnt = 0
-		self.q_njobsT = deque(maxlen=self.colsize)
-		self.q_njobsR = deque(maxlen=self.colsize)
-		self.q_njobsH = deque(maxlen=self.colsize)
-		self.q_njobsQ = deque(maxlen=self.colsize)
-		self.q_fairshare = deque(maxlen=self.colsize)
+		self.q_njobsT = deque(maxlen=deque_len)
+		self.q_njobsR = deque(maxlen=deque_len)
+		self.q_njobsH = deque(maxlen=deque_len)
+		self.q_njobsQ = deque(maxlen=deque_len)
+		self.q_fairshare = deque(maxlen=deque_len)
 		self.l_jobprogress = []
 
 		self.njobsT = 0
@@ -53,7 +51,15 @@ class UserData():
 		self.q_njobsQ.append(self.njobsQ)
 		self.q_fairshare.append(self.fairshare)
 
-		if self.njobsT > 0:
-			self.viscnt = self.colsize
-		elif self.viscnt > 0:
-			self.viscnt -= 1
+		#if self.njobsT > 0:
+			#self.viscnt = deque_len
+		#elif self.viscnt > 0:
+			#self.viscnt -= 1
+
+		if self.q_fairshare < 100.0:
+			self.viscnt = deque_len
+		else:
+			if self.njobsT > 0:
+				self.viscnt = deque_len
+			elif self.viscnt > 0:
+				self.viscnt -= 1

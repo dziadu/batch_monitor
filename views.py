@@ -187,14 +187,14 @@ def prepare_data(farm):
 			if _n_hj > 0:
 				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, '_color': col_idx })
 
-	val = g_users['ALL']
-	col_idx = len(data_series_tj)
+		val = g_users['ALL']
+		col_idx = len(data_series_tj)
 
-	_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
-	_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
+		_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
+		_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-	data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
-	data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
 	cache.set('data_tj', data_series_tj)
 	cache.set('data_rj', data_series_rj)

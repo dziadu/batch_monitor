@@ -70,6 +70,7 @@ def parse_diagnose(data):
 					_uname = words[0][:-1]
 				else:
 					_uname = words[0]
+				_uname = _uname[0:8]
 
 				if _uname not in g_users:
 					print("Adding user " + _uname)

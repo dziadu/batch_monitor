@@ -1,15 +1,69 @@
 from batch_monitor.models import BatchHostSettings, UserData, TimeData
 
-import datetime
-import time
-
+import datetime, time
 import collections
-import subprocess
+import threading, subprocess, subprocess32
+
 from django.core.cache import cache
 
 g_users = None
 g_user_total = None
 g_view_list = []
+
+class Command(object):
+	def __init__(self, tid, cmd):
+		self.tid = tid
+		self.cmd = cmd
+		self.process = None
+		self.thread = None
+		self.cout = None
+		self.cerr = None
+		self.terminated = False
+
+	def run(self):
+		def target():
+			self.process = subprocess32.Popen(self.cmd, shell=True, stdout=subprocess32.PIPE, stderr=subprocess32.PIPE)
+			self.cout, self.cerr = self.process.communicate()
+
+		self.thread = threading.Thread(target=target)
+		self.thread.start()
+
+	def check(self, timeout):
+		self.thread.join(timeout)
+		if self.thread.is_alive():
+			print("Terminating " + self.tid + " process: " + self.cmd)
+			self.process.terminate()
+			self.thread.join()
+			self.terminated = True
+
+		return self.cout, self.cerr, self.terminated
+
+def fetch_data(remote, countdown=10):
+	if remote is not None:
+		cmd1 = "{:s} diagnose -f".format(remote)
+		cmd2 = "{:s} qstat -n -1".format(remote)
+	else:
+		cmd = "diagnose -f"
+		cmd = "qstat -n -1"
+		#cmd1 = "cat batch_monitor/diagnose.txt;"
+		#cmd2 = "cat batch_monitor/qstat.txt"
+
+	command1 = Command("p1", cmd1)
+	command2 = Command("p2", cmd2)
+
+	while True:
+		command1.run()
+		command2.run()
+
+		co1, ce1, ter1 = command1.check(timeout=2)
+		co2, ce2, ter2 = command2.check(timeout=2)
+
+		if countdown == 0 or not ter1 and not ter2:
+			break
+		else:
+			countdown -=1
+
+	return co1.decode("UTF-8"), co2.decode("UTF-8")
 
 def fetch_diagnose(remote):
 	if remote is not None:
@@ -148,8 +202,10 @@ def parse_farm(farm):
 
 	g_ts.ts.append(time.mktime(datetime.datetime.now().timetuple()) * 1000)
 
-	dia_out = fetch_diagnose(remote)
-	qst_out = fetch_qstat(remote)
+	#dia_out = fetch_diagnose(remote)
+	#qst_out = fetch_qstat(remote)
+
+	dia_out, qst_out = fetch_data(remote)
 
 	g_users = cache.get("user_list", None)
 	if g_users is None:

@@ -198,7 +198,7 @@ def parse_farm(farm):
 	if farm.host == "localhost":
 		remote = None
 	else:
-		remote = "sssh -p {:d} {:s}@{:s}".format(farm.port, farm.user, farm.host)
+		remote = "ssh -o 'BatchMode yes' -p {:d} {:s}@{:s}".format(farm.port, farm.user, farm.host)
 
 	g_ts = cache.get("time_stamp", None)
 	if g_ts is None:
@@ -212,7 +212,7 @@ def parse_farm(farm):
 	dia_out, qst_out, dia_errno, qst_errno = fetch_data(remote)
 
 	print(dia_errno, qst_errno)
-	if dia_out is None or qst_out is None:
+	if dia_out is '' or qst_out is '':
 		return False
 
 	dia_out = dia_out.decode("UTF-8")

@@ -42,14 +42,14 @@ def update(request, farm_id):
 	d['farm'] = farm
 	d['res'] = 0
 
-	lock = cache.get("lock", False)
+	#lock = cache.get("lock", False)
 
-	if lock:
-		d['res'] = 1
-		return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
+	#if lock:
+		#d['res'] = 1
+		#return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
 
-	lock = True
-	cache.set("lock", lock)
+	#lock = True
+	#cache.set("lock", lock)
 
 	if batch_monitor.update.parse_farm(farm):
 		prepare_data(farm_id)
@@ -59,8 +59,8 @@ def update(request, farm_id):
 
 	rnd = render(request, 'batch_monitor/update.html', d)
 
-	lock = False
-	cache.set("lock", lock)
+	#lock = False
+	#cache.set("lock", lock)
 
 	return rnd
 

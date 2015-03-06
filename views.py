@@ -2,7 +2,7 @@
 
 from django.core.cache import cache
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 
 from django.views import generic
@@ -46,7 +46,7 @@ def update(request, farm_id):
 
 	if lock:
 		d['res'] = 1
-		return render(request, 'batch_monitor/update.html', d)
+		return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
 
 	lock = True
 	cache.set("lock", lock)
@@ -55,6 +55,7 @@ def update(request, farm_id):
 		prepare_data(farm_id)
 	else:
 		d['res'] = 2
+		return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
 
 	rnd = render(request, 'batch_monitor/update.html', d)
 

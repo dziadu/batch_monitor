@@ -18,12 +18,14 @@ class Command(object):
 		self.thread = None
 		self.cout = None
 		self.cerr = None
+		self.errno = 0
 		self.terminated = False
 
 	def run(self):
 		def target():
 			self.process = subprocess32.Popen(self.cmd, shell=True, stdout=subprocess32.PIPE, stderr=subprocess32.PIPE)
 			self.cout, self.cerr = self.process.communicate()
+			self.errno = self.process.returncode
 
 		self.thread = threading.Thread(target=target)
 		self.thread.start()
@@ -36,7 +38,7 @@ class Command(object):
 			#self.thread.join()
 			self.terminated = True
 
-		return self.cout, self.cerr, self.terminated
+		return self.cout, self.cerr, self.terminated, self.errno
 
 def fetch_data(remote, countdown=0):
 	if remote is not None:
@@ -57,15 +59,15 @@ def fetch_data(remote, countdown=0):
 		command1.run()
 		command2.run()
 
-		co1, ce1, ter1 = command1.check(timeout=2)
-		co2, ce2, ter2 = command2.check(timeout=2)
+		co1, ce1, ter1, errno1 = command1.check(timeout=2)
+		co2, ce2, ter2, errno2 = command2.check(timeout=2)
 
 		if countdown == 0 or not ter1 and not ter2:
 			break
 		else:
 			countdown -=1
 
-	return co1, co2
+	return co1, co2, errno1, errno2
 
 def fetch_diagnose(remote):
 	if remote is not None:
@@ -196,7 +198,7 @@ def parse_farm(farm):
 	if farm.host == "localhost":
 		remote = None
 	else:
-		remote = "ssh -p {:d} {:s}@{:s}".format(farm.port, farm.user, farm.host)
+		remote = "sssh -p {:d} {:s}@{:s}".format(farm.port, farm.user, farm.host)
 
 	g_ts = cache.get("time_stamp", None)
 	if g_ts is None:
@@ -207,8 +209,9 @@ def parse_farm(farm):
 	#dia_out = fetch_diagnose(remote)
 	#qst_out = fetch_qstat(remote)
 
-	dia_out, qst_out = fetch_data(remote)
+	dia_out, qst_out, dia_errno, qst_errno = fetch_data(remote)
 
+	print(dia_errno, qst_errno)
 	if dia_out is None or qst_out is None:
 		return False
 

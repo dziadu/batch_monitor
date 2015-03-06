@@ -38,7 +38,7 @@ class Command(object):
 
 		return self.cout, self.cerr, self.terminated
 
-def fetch_data(remote, countdown=10):
+def fetch_data(remote, countdown=0):
 	if remote is not None:
 		cmd1 = "{:s} diagnose -f".format(remote)
 		cmd2 = "{:s} qstat -n -1".format(remote)

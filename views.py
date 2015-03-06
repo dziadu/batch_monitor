@@ -30,8 +30,6 @@ class IndexView(generic.ListView):
 	context_object_name = 'farms_list'
 	#model = BatchHostSettings
 
-	cache.set("foo", "bar")
-
 	def get_queryset(self):
 		""" Return the last five published polls."""
 		return BatchHostSettings.objects.all()
@@ -39,11 +37,31 @@ class IndexView(generic.ListView):
 #views 
 def update(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
-	batch_monitor.update.parse_farm(farm)
+
 	d = dict()
 	d['farm'] = farm
-	prepare_data(farm_id)
-	return render(request, 'batch_monitor/update.html', d)
+	d['res'] = 0
+
+	lock = cache.get("lock", False)
+
+	if lock:
+		d['res'] = 1
+		return render(request, 'batch_monitor/update.html', d)
+
+	lock = True
+	cache.set("lock", lock)
+
+	if batch_monitor.update.parse_farm(farm):
+		prepare_data(farm_id)
+	else:
+		d['res'] = 2
+
+	rnd = render(request, 'batch_monitor/update.html', d)
+
+	lock = False
+	cache.set("lock", lock)
+
+	return rnd
 
 def monitor(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)

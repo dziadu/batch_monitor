@@ -1,1 +1,10 @@
+ERRNO: {{ res }} - 
+{% if res == 0 %}
 Done
+{% elif res == 1 %}
+Batch farm busy
+{% elif res == 2 %}
+Fetching data failed
+{% elif res == 3 %}
+Parsing data failed
+{% endif %}

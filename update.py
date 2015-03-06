@@ -33,7 +33,7 @@ class Command(object):
 		if self.thread.is_alive():
 			print("Terminating " + self.tid + " process: " + self.cmd)
 			self.process.terminate()
-			self.thread.join()
+			#self.thread.join()
 			self.terminated = True
 
 		return self.cout, self.cerr, self.terminated
@@ -42,6 +42,8 @@ def fetch_data(remote, countdown=10):
 	if remote is not None:
 		cmd1 = "{:s} diagnose -f".format(remote)
 		cmd2 = "{:s} qstat -n -1".format(remote)
+		#cmd1 = "cat batch_monitor/diagnose.txt;"
+		#cmd2 = "cat batch_monitor/qstat.txt"
 	else:
 		cmd = "diagnose -f"
 		cmd = "qstat -n -1"
@@ -63,7 +65,7 @@ def fetch_data(remote, countdown=10):
 		else:
 			countdown -=1
 
-	return co1.decode("UTF-8"), co2.decode("UTF-8")
+	return co1, co2
 
 def fetch_diagnose(remote):
 	if remote is not None:
@@ -77,7 +79,7 @@ def fetch_diagnose(remote):
 	)
 
 	cout, cerr = proc.communicate()
-	return cout.decode("UTF-8")
+	return cout
 
 def fetch_qstat(remote):
 	if remote is not None:
@@ -91,7 +93,7 @@ def fetch_qstat(remote):
 	)
 
 	cout, cerr = proc.communicate()
-	return cout.decode("UTF-8")
+	return cout
 
 def parse_diagnose(data):
 	global g_users, g_user_total
@@ -207,6 +209,12 @@ def parse_farm(farm):
 
 	dia_out, qst_out = fetch_data(remote)
 
+	if dia_out is None or qst_out is None:
+		return False
+
+	dia_out = dia_out.decode("UTF-8")
+	qst_out = qst_out.decode("UTF-8")
+
 	g_users = cache.get("user_list", None)
 	if g_users is None:
 		g_users = collections.OrderedDict()
@@ -233,3 +241,5 @@ def parse_farm(farm):
 	cache.set("time_stamp", g_ts)
 	cache.set("user_list", g_users)
 	cache.set("view_list", g_view_list)
+
+	return True

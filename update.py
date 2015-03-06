@@ -211,8 +211,7 @@ def parse_farm(farm):
 
 	dia_out, qst_out, dia_errno, qst_errno = fetch_data(remote)
 
-	print(dia_errno, qst_errno)
-	if dia_out is '' or qst_out is '':
+	if dia_errno != 0 or qst_errno != 0:
 		return False
 
 	dia_out = dia_out.decode("UTF-8")

@@ -39,6 +39,11 @@ div.chart_box {
 	width: 100%;
 }
 
+div.chart_half_box {
+	display: block;
+	width: 50%;
+}
+
 div.chart {
 	border: 1px solid black;
 	height: 28%;

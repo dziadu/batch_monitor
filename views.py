@@ -18,12 +18,13 @@ from datetime import datetime
 
 from decorators import json_response
 
-label_total_jobs = 'Total jobs'
-label_running_jobs = 'Running jobs'
-label_queued_jobs = 'Queued jobs'
-label_holded_jobs = 'Holded jobs'
-label_jobs_race = 'Jobs race'
-label_fair_share = 'Fair share rank'
+label_tj = 'Total jobs'
+label_rj = 'Running jobs'
+label_qj = 'Queued jobs'
+label_hj = 'Hold jobs'
+label_jp = 'Jobs race'
+label_fs = 'Fair share rank'
+label_jct = 'Jobs computing time'
 
 class IndexView(generic.ListView):
 	template_name = 'batch_monitor/index.html'
@@ -79,19 +80,21 @@ def monitor(request, farm_id):
 	data_group_hj = cache.get('data_hj_f', None)
 	data_series_fs = cache.get('data_fs', None)
 	data_group_jp = cache.get('data_jp', None)
+	data_series_jct = cache.get('data_jct', None)
 
-	chart_tj = format_time_plot(farm_id, 'tj', label_total_jobs, series_data=data_series_tj)
-	chart_rj = format_time_plot(farm_id, 'rj', label_running_jobs, series_data=data_series_rj)
-	chart_fs = format_time_plot(farm_id, 'fs', label_fair_share, series_data=data_series_fs)
+	chart_tj = format_time_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
+	chart_rj = format_time_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
+	chart_fs = format_time_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
+	chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_series_jct)
 
-	pie_chart_qj = format_pie_chart(label_queued_jobs, data_group_qj, [ '30%', '50%' ])
-	pie_chart_hj = format_pie_chart(label_holded_jobs, data_group_hj, [ '70%', '50%' ])
+	pie_chart_qj = format_pie_chart(label_qj, data_group_qj, [ '30%', '50%' ])
+	pie_chart_hj = format_pie_chart(label_hj, data_group_hj, [ '70%', '50%' ])
 
 	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
 
-	chart_jp = format_scatter_plot(farm_id, 'jp', label_jobs_race, data=scatter_pie_all_data)
+	chart_jp = format_scatter_plot(farm_id, 'jp', label_jp, data=scatter_pie_all_data)
 
-	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp]
+	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct]
 
 	return render(request, 'batch_monitor/monitor.html', d)
 
@@ -123,14 +126,17 @@ def jsonreq(request, farm_id, data_type):
 		return {
 			'result': response_data,
 			'pie': [{
-					'name' : label_queued_jobs,
+					'name' : label_qj,
 					'data': cache.get('data_qj', None),
 				},
 				{
-					'name' : label_holded_jobs,
+					'name' : label_hj,
 					'data': cache.get('data_hj', None),
 				}]
 			}
+	elif data_type == "jct":
+		response_data = cache.get('data_jct', None)
+
 	else:
 		response_data = None
 
@@ -164,17 +170,16 @@ def prepare_data(farm):
 	data_series_fs = []
 	data_group_jp = []
 
+	data_series_jct = []
+
 	g_ts = cache.get("time_stamp", None)
 
 	if g_ts is not None:
 		data_list_ts = list(g_ts.ts)
 
-	g_users = cache.get("user_list", None)
+	g_users = cache.get("users_list", None)
 
-	total_queued = 0
-	total_holded = 0
-
-	_vl = cache.get('view_list', None)
+	_vl = cache.get('views_list', None)
 	if _vl is not None:
 		for u in _vl:
 			if u == 'ALL':
@@ -190,11 +195,10 @@ def prepare_data(farm):
 			_n_qj = val.q_njobsQ[len(val.q_njobsQ)-1]
 			_n_hj = val.q_njobsH[len(val.q_njobsH)-1]
 
-			total_queued += _n_qj
-			total_holded += _n_hj
-
 			_lfs = [list(a) for a in zip(data_list_ts, list(val.q_fairshare))]
 			_ljp = list(val.l_jobprogress)
+			
+			_ljct = histogramize(val.q_calctime, 20, 0, 120)
 
 			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
@@ -205,6 +209,9 @@ def prepare_data(farm):
 				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, '_color': col_idx })
 			if _n_hj > 0:
 				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, '_color': col_idx })
+
+			data_series_jct.append({ 'name' : val.name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+
 
 		val = g_users['ALL']
 		col_idx = len(data_series_tj)
@@ -221,6 +228,7 @@ def prepare_data(farm):
 	cache.set('data_hj', data_group_hj)
 	cache.set('data_fs', data_series_fs)
 	cache.set('data_jp', data_group_jp)
+	cache.set('data_jct', data_series_jct)
 
 	for i in xrange(len(data_group_qj)):
 		_c = data_group_qj[i]['_color']
@@ -255,6 +263,33 @@ def format_time_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel
 			'dateTimeLabelFormats' : {
 				'hour' : '%H:%M',
 				'day' : '%e. %b', }, },
+		'yAxis': {
+			'title': { 'text': ylabel },
+			'floor': 0,
+			},
+		'series': series_data,
+		}
+
+	return chart
+
+def format_hist_plot(farm, chart_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
+	chart = {
+		'chart':{
+			'type': 'line',
+			'zoomType': 'x',
+			'events': {
+				'load': "$@#function() {"
+					" hist_chart_updater(" + farm + ", this, '" + chart_type + "');"
+					" }#@$"
+					, } },
+		'title': {
+			'text': title },
+		'subtitle': {
+			'text': ' -- ' },
+		'xAxis': {
+			'allowDecimals' : 'false',
+			'title': {
+				'text': xlabel }, },
 		'yAxis': {
 			'title': { 'text': ylabel },
 			'floor': 0,
@@ -321,3 +356,19 @@ def format_pie_chart(title, pie_data, center, size='50%'):
 		}
 	}
 	return chart
+
+
+def histogramize(data, bins, bmin, bmax):
+	tick = float(bmax - bmin)/bins
+	histo = [None] * bins
+
+	for i in xrange(bins):
+		histo[i] = [ bmin + i*tick + tick/2, 0 ]
+
+	for i in xrange(len(data)):
+		val = float(data[i])
+		_bin = int( (val - bmin) / tick )
+		if _bin >= 0 and _bin < bins:
+			histo[_bin][1] += 1
+
+	return histo

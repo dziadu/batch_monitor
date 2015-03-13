@@ -77,6 +77,58 @@ function time_chart_updater(farm, chart, chart_type) {
 	setInterval(function() {f()}, update_period_ms);
 }
 
+// configure periodical update of the hist chart
+function hist_chart_updater(farm, chart, chart_type) {
+	var f = function() {
+		$.getJSON('/monitor/'+farm+'/json/'+chart_type+'/?callback=?', function(jsondata) {
+			if (jsondata == null)
+				return
+
+			var s_len = jsondata.result.length;
+			if (s_len == 0)
+				return;
+
+			var s_len = chart.series.length;
+			for (_i = s_len; _i > 0; _i--) {
+				var i = _i-1;
+				var res = getObjects(jsondata.result, 'name', chart.series[i].name)
+
+				if (res.length == 1) {
+					chart.series[i].setData(res[0].data);
+					chart.series[i].update({
+						color: Highcharts.getOptions().colors[ res[0]._color ],
+						zIndex: res[0].zIndex,
+						index: res[0].index,
+					})
+					jsondata.result.splice(jsondata.result.indexOf(res[0]), 1)
+				}
+				else if (res.length > 1) { }
+				else { chart.series[i].remove() }
+			}
+
+			var s_len = jsondata.result.length;
+			for (i = 0; i < s_len; i++) {
+				var ser = chart.addSeries(jsondata.result[i]);
+				ser.update({
+					color: Highcharts.getOptions().colors[ jsondata.result[i]._color ],
+					zIndex: jsondata.result[i].zIndex,
+					index: jsondata.result[i].index,
+				})
+			}
+
+			chart.redraw();
+		});
+
+		chart_time_subtitle(chart)
+	}
+
+// 	f();
+	chart_time_subtitle(chart)
+
+	// set up the updating of the chart each second
+	setInterval(function() {f()}, update_period_ms);
+}
+
 // configure periodical update of the scatter+pie charts
 function scatter_chart_updater(farm, chart, chart_type) {
 	var f = function() {

@@ -28,6 +28,7 @@ class UserData():
 		self.q_njobsQ = deque(maxlen=deque_len)
 		self.q_fairshare = deque(maxlen=deque_len)
 		self.l_jobprogress = []
+		self.q_calctime = deque(maxlen=1000)
 
 		self.njobsT = 0
 		self.njobsR = 0
@@ -64,3 +65,61 @@ class UserData():
 				self.viscnt = deque_len
 			elif self.viscnt > 0:
 				self.viscnt -= 1
+
+class JobData():
+	def __init__(self, jid, name, farm, status, req_time, ela_time):
+		self.jid = jid
+		self.name = name
+		self.farm = farm
+		self.req_time = self.qtime2mins(req_time)
+		self.ela_time = self.qtime2mins(ela_time)
+		# 0 - queued, 1 - run, 2 - hold, 3 - finished
+		self.status = 0
+		self.status_decode(status)
+
+	def requested(self):
+		return self.req_time
+
+	def progress(self):
+		return float(self.ela_time)/self.req_time
+
+	def calc_time(self):
+		return self.ela_time
+
+	def mark_done(self):
+		self.status = 3
+
+	def is_queued(self):
+		return self.status == 0
+
+	def is_running(self):
+		return self.status == 1
+
+	def is_hold(self):
+		return self.status == 2
+
+	def is_done(self):
+		return self.status == 3
+
+	def qtime2mins(self, text):
+		if text == "--":
+			text = "00:00"
+
+		time = text.split(":")
+		return int(time[0]) * 60 + int(time[1])
+
+	def status_decode(self, status):
+		if status == "Q":
+			self.status = 0
+		elif status == "R":
+			self.status = 1
+		elif status == "H":
+			self.status = 2
+
+	def update_status(self, status, ela_time = 0):
+		self.status_decode(status)
+		self.ela_time = self.qtime2mins(ela_time)
+
+class JobsData():
+	def __init__(self, name):
+		pass

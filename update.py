@@ -1,4 +1,4 @@
-from batch_monitor.models import BatchHostSettings, UserData, TimeData
+from batch_monitor.models import BatchHostSettings, UserData, JobData, TimeData
 
 import datetime, time
 import collections
@@ -44,13 +44,13 @@ def fetch_data(remote, countdown=0):
 	if remote is not None:
 		cmd1 = "{:s} diagnose -f".format(remote)
 		cmd2 = "{:s} qstat -n -1".format(remote)
-		#cmd1 = "cat batch_monitor/diagnose.txt;"
-		#cmd2 = "cat batch_monitor/qstat.txt"
 	else:
-		cmd = "diagnose -f"
-		cmd = "qstat -n -1"
-		#cmd1 = "cat batch_monitor/diagnose.txt;"
-		#cmd2 = "cat batch_monitor/qstat.txt"
+		cmd1 = "diagnose -f"
+		cmd2 = "qstat -n -1"
+
+	#remote = None
+	#cmd1 = "cat batch_monitor/diagnose.txt;"
+	#cmd2 = "cat batch_monitor/qstat.txt"
 
 	command1 = Command("p1", cmd1)
 	command2 = Command("p2", cmd2)
@@ -97,9 +97,7 @@ def fetch_qstat(remote):
 	cout, cerr = proc.communicate()
 	return cout
 
-def parse_diagnose(data):
-	global g_users, g_user_total
-
+def parse_diagnose(data, users_list):
 	text = data
 
 	_waitline=0
@@ -130,20 +128,23 @@ def parse_diagnose(data):
 					_uname = words[0]
 				_uname = _uname[0:8]
 
-				if _uname not in g_users:
+				if _uname not in users_list:
 					print("Adding user " + _uname)
-					g_users[_uname] = UserData(_uname)
+					users_list[_uname] = UserData(_uname)
 
 				_fair = float(words[1])
-				g_users[_uname].clear()
-				g_users[_uname].fairshare = 100.0 - _fair
+				users_list[_uname].clear()
+				users_list[_uname].fairshare = 100.0 - _fair
 
-def parse_qstat(data):
-	global g_users, g_user_total
+def parse_qstat(data, jobs_list = []):
 	text = data
 
 	_waitline=0
 	_parse_jobs = False
+
+	""" job list length to iterate on """
+	job_list_len = len(jobs_list)
+	job_cnt = 0
 
 	for line in text.splitlines():
 		_l = line.split()
@@ -160,37 +161,107 @@ def parse_qstat(data):
 				continue
 			else:
 				words = line.split()
-				_jname = words[0]
-				_uname = words[1]
-				_fname = words[2]
-				_rname = words[8]
-				_sname = words[9]
-				_ename = words[10]
+				_jid		= words[0]
+				_user		= words[1]
+				_farm		= words[2]
+				_reqtime	= words[8]
+				_status		= words[9]
+				_elatime	= words[10]
 
-				if _sname == "R":
-					g_users[_uname].njobsR += 1
-					g_user_total.njobsR += 1
+				jid = int(_jid.split('.')[0])
 
-					if _fname == "farmqe":
+				if job_list_len == 0:
+					#print(" Adding job %d" % jid)
+					""" if list empty, all jobs are new, append them """
+					jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
+					jobs_list.append(jd)
 
-						if _ename == "--":
-							_ename = "00:00"
+				else:
+					while True:
 
-						_time_r = _rname.split(":")
-						_mins_r = int(_time_r[0]) * 60 + int(_time_r[1])
-						_time_e = _ename.split(":")
-						_mins_e = int(_time_e[0]) * 60 + int(_time_e[1])
+						""" we reached end of the list, this job must be new then """
+						if job_cnt == job_list_len:
+							#print(" Adding job %d" % jid)
+							jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
+							jobs_list.append(jd)
+							break
 
-						_time_progress = float(_mins_e) / _mins_r
-						g_users[_uname].l_jobprogress.append([_mins_r, _time_progress])
+						else:
+							""" if jid is smaller than jid of current job """
+							if jobs_list[job_cnt].jid < jid:
+								#print(" Removing job %d" % jobs_list[job_cnt].jid)
+								""" otherwise job we are comparing to is finished
+								mark as done and jump to next one """
+								jobs_list[job_cnt].mark_done()
+								job_cnt += 1
+								continue
 
-				if _sname == "H":
-					g_users[_uname].njobsH += 1
-					g_user_total.njobsH += 1
+								""" update status of the job and break loop """
+							elif jobs_list[job_cnt].jid == jid:
+								#print(" Updating job %d" % jobs_list[job_cnt].jid)
+								jobs_list[job_cnt].update_status(_status, _elatime)
+								job_cnt += 1
+								break
 
-				if _sname == "Q":
-					g_users[_uname].njobsQ += 1
-					g_user_total.njobsQ += 1
+							else:
+								print("Something went wrong with JID=%d..." % jid)
+
+def validate_jobs_list(jobs_list, users_list):
+	jobs_len = len(jobs_list)
+
+	total_run = 0
+	total_queued = 0
+	total_hold = 0
+
+	""" adding finished jobs to queue of calculation time """
+	for i in xrange(jobs_len):
+
+		_name = jobs_list[i].name
+		_user = users_list[_name]
+
+		if jobs_list[i].is_done():
+			_user.q_calctime.append(jobs_list[i].calc_time())
+
+		elif jobs_list[i].is_queued():
+			_user.njobsQ += 1
+			total_queued += 1
+
+		elif jobs_list[i].is_running():
+			_user.njobsR += 1
+			total_run += 1
+
+			if jobs_list[i].farm == "farmqe":
+				_user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
+
+		elif jobs_list[i].is_hold():
+			_user.njobsH += 1
+			total_hold += 1
+
+	user_total = users_list['ALL']
+	user_total.njobsR = total_run
+	user_total.njobsQ = total_queued
+	user_total.njobsH = total_hold
+
+def cleanup_jobs_list(jobs_list, users_list):
+	jobs_len = len(jobs_list)
+
+	""" removing ranges instead of single jobs is more efficient
+		this variables keeps beginning of the removing queue
+		and flag is still valid """
+	rm_queue_sta = -1
+	rm_queue = False
+
+	for i in xrange(jobs_len-1, -1, -1):
+		if jobs_list[i].is_done():
+			if rm_queue_sta == -1:
+				rm_queue_sta = i
+		else:
+			if rm_queue_sta != -1:
+				del jobs_list[i+1:rm_queue_sta+1]
+				rm_queue_sta = -1
+
+	if rm_queue_sta != -1:
+		del jobs_list[0:rm_queue_sta+1]
 
 def parse_farm(farm):
 	global g_users, g_user_total, g_view_list
@@ -214,19 +285,24 @@ def parse_farm(farm):
 	if dia_errno != 0 or qst_errno != 0:
 		return False
 
+	#print(dia_out, qst_out)
 	dia_out = dia_out.decode("UTF-8")
 	qst_out = qst_out.decode("UTF-8")
 
-	g_users = cache.get("user_list", None)
+	g_users = cache.get("users_list", None)
 	if g_users is None:
 		g_users = collections.OrderedDict()
 		g_users['ALL'] = UserData('All users')
 
 	g_user_total = g_users['ALL']
-	g_user_total.clear()
 
-	parse_diagnose(dia_out)
-	parse_qstat(qst_out)
+	g_jobs = cache.get("jobs_list", [])
+
+	parse_diagnose(dia_out, g_users)
+	parse_qstat(qst_out, g_jobs)
+
+	validate_jobs_list(g_jobs, g_users)
+	cleanup_jobs_list(g_jobs, g_users)
 
 	del g_view_list[:]
 	g_view_list.append('ALL')
@@ -241,7 +317,8 @@ def parse_farm(farm):
 				g_view_list.append(u)
 
 	cache.set("time_stamp", g_ts)
-	cache.set("user_list", g_users)
-	cache.set("view_list", g_view_list)
+	cache.set("users_list", g_users)
+	cache.set("jobs_list", g_jobs)
+	cache.set("views_list", g_view_list)
 
 	return True

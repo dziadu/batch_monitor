@@ -28,7 +28,7 @@ class UserData():
 		self.q_njobsQ = deque(maxlen=deque_len)
 		self.q_fairshare = deque(maxlen=deque_len)
 		self.l_jobprogress = []
-		self.q_calctime = deque(maxlen=1000)
+		self.q_calctime = deque(maxlen=100)
 
 		self.njobsT = 0
 		self.njobsR = 0

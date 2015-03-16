@@ -33,7 +33,7 @@ class Command(object):
 	def check(self, timeout):
 		self.thread.join(timeout)
 		if self.thread.is_alive():
-			print("Terminating " + self.tid + " process: " + self.cmd)
+			print("Terminating " + self.tid + " process: " + self.cmd + " at " + datetime.datetime.now())
 			self.process.terminate()
 			#self.thread.join()
 			self.terminated = True
@@ -145,6 +145,7 @@ def parse_qstat(data, jobs_list = []):
 	""" job list length to iterate on """
 	job_list_len = len(jobs_list)
 	job_cnt = 0
+	has_jobs = False
 
 	for line in text.splitlines():
 		_l = line.split()
@@ -160,6 +161,7 @@ def parse_qstat(data, jobs_list = []):
 				_waitline -= 1
 				continue
 			else:
+				has_jobs = True
 				words = line.split()
 				_jid		= words[0]
 				_user		= words[1]
@@ -205,6 +207,10 @@ def parse_qstat(data, jobs_list = []):
 
 							else:
 								print("Something went wrong with JID=%d..." % jid)
+
+	if not has_jobs:
+		for i in xrange(len(jobs_list)):
+			jobs_list[i].mark_done()
 
 def validate_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)

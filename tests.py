@@ -125,6 +125,10 @@ class SimpleTest(TestCase):
 			"6248085.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- \n"
 			"6248086.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- ")
 
+		jobs4 = ("\n\n"
+			"Job ID               Username Queue    Jobname    SessID NDS   TSK Memory Time  S Time\n"
+			"-------------------- -------- -------- ---------- ------ ----- --- ------ ----- - -----")
+
 		jobs_list = []
 		users_list = collections.OrderedDict()
 		users_list['ALL'] = UserData('ALL')
@@ -150,3 +154,8 @@ class SimpleTest(TestCase):
 		self.assertEqual(len(jobs_list), 20)
 		self.assertEqual(jobs_list[0].jid, 6248067)
 		self.assertEqual(jobs_list[19].jid, 6248086)
+
+		update.parse_qstat(jobs4, jobs_list)
+		update.validate_jobs_list(jobs_list, users_list)
+		update.cleanup_jobs_list(jobs_list, users_list)
+		self.assertEqual(len(jobs_list), 0)

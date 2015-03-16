@@ -216,6 +216,9 @@ def validate_jobs_list(jobs_list, users_list):
 	total_queued = 0
 	total_hold = 0
 
+	for u in users_list:
+		users_list[u].clear()
+
 	""" adding finished jobs to queue of calculation time """
 	for i in xrange(jobs_len):
 

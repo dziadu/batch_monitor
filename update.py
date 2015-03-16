@@ -204,6 +204,7 @@ def parse_qstat(data, jobs_list = []):
 
 						else:
 							print("Something went wrong with JID=%d..." % jid)
+							continue
 
 	if not has_jobs:
 		for i in xrange(job_list_len):

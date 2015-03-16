@@ -250,7 +250,7 @@ def validate_jobs_list(jobs_list, users_list):
 	user_total.njobsR = total_run
 	user_total.njobsQ = total_queued
 	user_total.njobsH = total_hold
-	user_total.njobsH = total_run + total_queued + total_hold
+	user_total.njobsT = total_run + total_queued + total_hold
 
 def cleanup_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)

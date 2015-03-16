@@ -179,7 +179,7 @@ def prepare_data(farm):
 
 	g_users = cache.get("users_list", None)
 
-	_vl = cache.get('views_list', None)
+	_vl = cache.get("views_list", None)
 	if _vl is not None:
 		for u in _vl:
 			if u == 'ALL':

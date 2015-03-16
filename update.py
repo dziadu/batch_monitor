@@ -8,7 +8,6 @@ from django.core.cache import cache
 
 g_users = None
 g_user_total = None
-g_view_list = []
 
 class Command(object):
 	def __init__(self, tid, cmd):
@@ -154,15 +153,20 @@ def parse_qstat(data, jobs_list = []):
 			_waitline = 1
 			continue
 
-		if not _parse_jobs:
-				continue
-		else:
+		if _parse_jobs:
 			if _waitline > 0:
 				_waitline -= 1
 				continue
 			else:
+				if len(line) == 0:
+					continue
+
 				has_jobs = True
 				words = line.split()
+
+				if len(words) == 0:
+					continue
+
 				_jid		= words[0]
 				_user		= words[1]
 				_farm		= words[2]
@@ -172,44 +176,37 @@ def parse_qstat(data, jobs_list = []):
 
 				jid = int(_jid.split('.')[0])
 
-				if job_list_len == 0:
-					#print(" Adding job %d" % jid)
-					""" if list empty, all jobs are new, append them """
-					jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
-					jobs_list.append(jd)
+				while True:
 
-				else:
-					while True:
+					""" we reached end of the list, this job must be new then """
+					if job_cnt == job_list_len:
+						#print(" Adding job %d" % jid)
+						jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
+						jobs_list.append(jd)
+						break
 
-						""" we reached end of the list, this job must be new then """
-						if job_cnt == job_list_len:
-							#print(" Adding job %d" % jid)
-							jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
-							jobs_list.append(jd)
+					else:
+						""" if jid is smaller than jid of current job """
+						if jobs_list[job_cnt].jid < jid:
+							#print(" Removing job %d" % jobs_list[job_cnt].jid)
+							""" otherwise job we are comparing to is finished
+							mark as done and jump to next one """
+							jobs_list[job_cnt].mark_done()
+							job_cnt += 1
+							continue
+
+							""" update status of the job and break loop """
+						elif jobs_list[job_cnt].jid == jid:
+							#print(" Updating job %d" % jobs_list[job_cnt].jid)
+							jobs_list[job_cnt].update_status(_status, _elatime)
+							job_cnt += 1
 							break
 
 						else:
-							""" if jid is smaller than jid of current job """
-							if jobs_list[job_cnt].jid < jid:
-								#print(" Removing job %d" % jobs_list[job_cnt].jid)
-								""" otherwise job we are comparing to is finished
-								mark as done and jump to next one """
-								jobs_list[job_cnt].mark_done()
-								job_cnt += 1
-								continue
-
-								""" update status of the job and break loop """
-							elif jobs_list[job_cnt].jid == jid:
-								#print(" Updating job %d" % jobs_list[job_cnt].jid)
-								jobs_list[job_cnt].update_status(_status, _elatime)
-								job_cnt += 1
-								break
-
-							else:
-								print("Something went wrong with JID=%d..." % jid)
+							print("Something went wrong with JID=%d..." % jid)
 
 	if not has_jobs:
-		for i in xrange(len(jobs_list)):
+		for i in xrange(job_list_len):
 			jobs_list[i].mark_done()
 
 def validate_jobs_list(jobs_list, users_list):
@@ -270,7 +267,7 @@ def cleanup_jobs_list(jobs_list, users_list):
 		del jobs_list[0:rm_queue_sta+1]
 
 def parse_farm(farm):
-	global g_users, g_user_total, g_view_list
+	global g_users, g_user_total
 
 	if farm.host == "localhost":
 		remote = None
@@ -310,7 +307,7 @@ def parse_farm(farm):
 	validate_jobs_list(g_jobs, g_users)
 	cleanup_jobs_list(g_jobs, g_users)
 
-	del g_view_list[:]
+	g_view_list = []
 	g_view_list.append('ALL')
 
 	for u in g_users.keys():

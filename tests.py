@@ -123,11 +123,11 @@ class SimpleTest(TestCase):
 			"6248083.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248084.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- \n"
 			"6248085.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- \n"
-			"6248086.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- ")
+			"6248086.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 H   --     -- \n")
 
 		jobs4 = ("\n\n"
 			"Job ID               Username Queue    Jobname    SessID NDS   TSK Memory Time  S Time\n"
-			"-------------------- -------- -------- ---------- ------ ----- --- ------ ----- - -----")
+			"-------------------- -------- -------- ---------- ------ ----- --- ------ ----- - -----\n")
 
 		jobs_list = []
 		users_list = collections.OrderedDict()

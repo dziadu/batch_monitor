@@ -41,7 +41,7 @@ class UserData():
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
-		self.fairshare = 100.0
+		#self.fairshare = 100.0
 		del self.l_jobprogress[:]
 
 	def fill(self):

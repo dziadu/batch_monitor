@@ -140,6 +140,11 @@ class SimpleTest(TestCase):
 		self.assertEqual(len(jobs_list), 17)
 		self.assertEqual(jobs_list[0].jid, 6248064)
 		self.assertEqual(jobs_list[16].jid, 6248080)
+		test_user = users_list['rmuenzer']
+		self.assertEqual(test_user.njobsT, 17)
+		self.assertEqual(test_user.njobsQ, 11)
+		self.assertEqual(test_user.njobsR, 6)
+		self.assertEqual(test_user.njobsH, 0)
 
 		update.parse_qstat(jobs2, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
@@ -147,6 +152,11 @@ class SimpleTest(TestCase):
 		self.assertEqual(len(jobs_list), 14)
 		self.assertEqual(jobs_list[0].jid, 6248067)
 		self.assertEqual(jobs_list[13].jid, 6248080)
+		test_user = users_list['rmuenzer']
+		self.assertEqual(test_user.njobsT, 14)
+		self.assertEqual(test_user.njobsQ, 6)
+		self.assertEqual(test_user.njobsR, 8)
+		self.assertEqual(test_user.njobsH, 0)
 
 		update.parse_qstat(jobs3, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
@@ -154,8 +164,18 @@ class SimpleTest(TestCase):
 		self.assertEqual(len(jobs_list), 20)
 		self.assertEqual(jobs_list[0].jid, 6248067)
 		self.assertEqual(jobs_list[19].jid, 6248086)
+		test_user = users_list['rmuenzer']
+		self.assertEqual(test_user.njobsT, 20)
+		self.assertEqual(test_user.njobsQ, 14)
+		self.assertEqual(test_user.njobsR, 3)
+		self.assertEqual(test_user.njobsH, 3)
 
 		update.parse_qstat(jobs4, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
 		update.cleanup_jobs_list(jobs_list, users_list)
 		self.assertEqual(len(jobs_list), 0)
+		test_user = users_list['rmuenzer']
+		self.assertEqual(test_user.njobsT, 0)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 0)
+		self.assertEqual(test_user.njobsH, 0)

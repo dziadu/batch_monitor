@@ -230,10 +230,12 @@ def validate_jobs_list(jobs_list, users_list):
 
 		elif jobs_list[i].is_queued():
 			_user.njobsQ += 1
+			_user.njobsT += 1
 			total_queued += 1
 
 		elif jobs_list[i].is_running():
 			_user.njobsR += 1
+			_user.njobsT += 1
 			total_run += 1
 
 			if jobs_list[i].farm == "farmqe":
@@ -241,12 +243,14 @@ def validate_jobs_list(jobs_list, users_list):
 
 		elif jobs_list[i].is_hold():
 			_user.njobsH += 1
+			_user.njobsT += 1
 			total_hold += 1
 
 	user_total = users_list['ALL']
 	user_total.njobsR = total_run
 	user_total.njobsQ = total_queued
 	user_total.njobsH = total_hold
+	user_total.njobsH = total_run + total_queued + total_hold
 
 def cleanup_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)

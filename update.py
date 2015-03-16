@@ -258,6 +258,9 @@ def validate_jobs_list(jobs_list, users_list):
 	user_total.njobsH = total_hold
 	user_total.njobsT = total_run + total_queued + total_hold
 
+	for u in users_list:
+		users_list[u].fill()
+
 def cleanup_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)
 
@@ -325,7 +328,7 @@ def parse_farm(farm):
 	g_view_list.append('ALL')
 
 	for u in g_users.keys():
-		g_users[u].fill()
+		#g_users[u].fill()
 
 		val = g_users[u]
 

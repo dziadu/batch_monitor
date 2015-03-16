@@ -206,6 +206,11 @@ def parse_qstat(data, jobs_list = []):
 							print("Something went wrong with JID=%d..." % jid)
 							continue
 
+	while job_cnt < job_list_len:
+		#print(" Removing finished job %d" % jobs_list[job_cnt].jid)
+		jobs_list[job_cnt].mark_done()
+		job_cnt += 1
+
 	if not has_jobs:
 		for i in xrange(job_list_len):
 			jobs_list[i].mark_done()
@@ -273,6 +278,7 @@ def cleanup_jobs_list(jobs_list, users_list):
 
 	if rm_queue_sta != -1:
 		del jobs_list[0:rm_queue_sta+1]
+
 
 def parse_farm(farm):
 	global g_users, g_user_total

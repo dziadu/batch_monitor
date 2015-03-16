@@ -98,8 +98,7 @@ class SimpleTest(TestCase):
 			"6248076.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248077.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248078.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
-			"6248079.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
-			"6248080.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- ")
+			"6248079.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- ")
 
 		jobs3 = ("\n\n"
 			"Job ID               Username Queue    Jobname    SessID NDS   TSK Memory Time  S Time\n"
@@ -117,7 +116,6 @@ class SimpleTest(TestCase):
 			"6248077.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248078.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248079.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
-			"6248080.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248081.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248082.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
 			"6248083.cronos.e12.p rmuenzer farmqe   param_hf_u    --      1  --   30mb 02:00 Q   --     -- \n"
@@ -137,11 +135,12 @@ class SimpleTest(TestCase):
 		update.parse_qstat(jobs1, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
 		update.cleanup_jobs_list(jobs_list, users_list)
-		self.assertEqual(len(jobs_list), 17)
+		exp_len = 17
+		self.assertEqual(len(jobs_list), exp_len)
 		self.assertEqual(jobs_list[0].jid, 6248064)
-		self.assertEqual(jobs_list[16].jid, 6248080)
+		self.assertEqual(jobs_list[exp_len-1].jid, 6248080)
 		test_user = users_list['rmuenzer']
-		self.assertEqual(test_user.njobsT, 17)
+		self.assertEqual(test_user.njobsT, exp_len)
 		self.assertEqual(test_user.njobsQ, 11)
 		self.assertEqual(test_user.njobsR, 6)
 		self.assertEqual(test_user.njobsH, 0)
@@ -149,31 +148,34 @@ class SimpleTest(TestCase):
 		update.parse_qstat(jobs2, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
 		update.cleanup_jobs_list(jobs_list, users_list)
-		self.assertEqual(len(jobs_list), 14)
+		exp_len = 13
+		self.assertEqual(len(jobs_list), exp_len)
 		self.assertEqual(jobs_list[0].jid, 6248067)
-		self.assertEqual(jobs_list[13].jid, 6248080)
+		self.assertEqual(jobs_list[exp_len-1].jid, 6248079)
 		test_user = users_list['rmuenzer']
-		self.assertEqual(test_user.njobsT, 14)
-		self.assertEqual(test_user.njobsQ, 6)
+		self.assertEqual(test_user.njobsT, exp_len)
+		self.assertEqual(test_user.njobsQ, 5)
 		self.assertEqual(test_user.njobsR, 8)
 		self.assertEqual(test_user.njobsH, 0)
 
 		update.parse_qstat(jobs3, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
 		update.cleanup_jobs_list(jobs_list, users_list)
-		self.assertEqual(len(jobs_list), 20)
+		exp_len = 19
+		self.assertEqual(len(jobs_list), exp_len)
 		self.assertEqual(jobs_list[0].jid, 6248067)
-		self.assertEqual(jobs_list[19].jid, 6248086)
+		self.assertEqual(jobs_list[exp_len-1].jid, 6248086)
 		test_user = users_list['rmuenzer']
-		self.assertEqual(test_user.njobsT, 20)
-		self.assertEqual(test_user.njobsQ, 14)
+		self.assertEqual(test_user.njobsT, exp_len)
+		self.assertEqual(test_user.njobsQ, 13)
 		self.assertEqual(test_user.njobsR, 3)
 		self.assertEqual(test_user.njobsH, 3)
 
 		update.parse_qstat(jobs4, jobs_list)
 		update.validate_jobs_list(jobs_list, users_list)
 		update.cleanup_jobs_list(jobs_list, users_list)
-		self.assertEqual(len(jobs_list), 0)
+		exp_len = 0
+		self.assertEqual(len(jobs_list), exp_len)
 		test_user = users_list['rmuenzer']
 		self.assertEqual(test_user.njobsT, 0)
 		self.assertEqual(test_user.njobsQ, 0)

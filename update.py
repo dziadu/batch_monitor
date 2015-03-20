@@ -204,7 +204,7 @@ def parse_qstat(data, jobs_list = []):
 
 						else:
 							print("Something went wrong with JID=%d..." % jid)
-							continue
+							break
 
 	while job_cnt < job_list_len:
 		#print(" Removing finished job %d" % jobs_list[job_cnt].jid)

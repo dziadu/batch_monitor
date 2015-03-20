@@ -2,6 +2,8 @@ from django.db import models
 
 from collections import deque
 
+from django.conf import settings
+
 # Create your models here.
 class BatchHostSettings(models.Model):
 	name = models.CharField(max_length=200)
@@ -10,8 +12,15 @@ class BatchHostSettings(models.Model):
 	port = models.IntegerField(default=22)
 	sshpub = models.TextField()
 
-deque_len = 12 * 60 * 1
-#deque_len = 10
+if hasattr(settings, 'BATCH_FARM_CALCTIME_LEN'):
+	calctime_len=int(settings.BATCH_FARM_CALCTIME_LEN)
+else:
+	calctime_len=500
+
+if hasattr(settings, 'BATCH_FARM_DEQUE_LEN'):
+	deque_len=int(settings.BATCH_FARM_DEQUE_LEN)
+else:
+	deque_len = 12 * 60 * 1
 
 class TimeData():
 	def __init__(self):
@@ -28,7 +37,7 @@ class UserData():
 		self.q_njobsQ = deque(maxlen=deque_len)
 		self.q_fairshare = deque(maxlen=deque_len)
 		self.l_jobprogress = []
-		self.q_calctime = deque(maxlen=100)
+		self.q_calctime = deque(maxlen=calctime_len)
 
 		self.njobsT = 0
 		self.njobsR = 0

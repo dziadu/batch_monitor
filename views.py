@@ -198,7 +198,7 @@ def prepare_data(farm):
 			_lfs = [list(a) for a in zip(data_list_ts, list(val.q_fairshare))]
 			_ljp = list(val.l_jobprogress)
 			
-			_ljct = histogramize(val.q_calctime, 20, 0, 120)
+			_ljct = histogramize(val.q_calctime, 24, 0, 120)
 
 			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })

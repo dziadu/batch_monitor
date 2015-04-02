@@ -1,219 +1,136 @@
-from batch_monitor.models import BatchHostSettings, UserData, JobData, TimeData
+from batch_monitor.models import BatchHostSettings
+from batch_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
 import datetime, time
 import collections
 import threading, subprocess, subprocess32
+import importlib, inspect
 
 from django.core.cache import cache
 
 g_users = None
 g_user_total = None
 
-class Command(object):
-	def __init__(self, tid, cmd):
-		self.tid = tid
-		self.cmd = cmd
-		self.process = None
-		self.thread = None
-		self.cout = None
-		self.cerr = None
-		self.errno = 0
-		self.terminated = False
+def import_modules(remote, fsengine, farmengine):
+	fs_obj = None
+	farm_obj = None
 
-	def run(self):
-		def target():
-			self.process = subprocess32.Popen(self.cmd, shell=True, stdout=subprocess32.PIPE, stderr=subprocess32.PIPE)
-			self.cout, self.cerr = self.process.communicate()
-			self.errno = self.process.returncode
+	if fsengine is not None:
+		modname = "batch_monitor.farms."+fsengine
+		module = importlib.import_module(modname)
+		clsmembers = inspect.getmembers(module, inspect.isclass)
+		for m in clsmembers:
+			if m[1].__module__ == modname:
+				fs_class = getattr(module, m[0])
+				fs_obj = fs_class(remote)
 
-		self.thread = threading.Thread(target=target)
-		self.thread.start()
+	if farmengine is not None:
+		modname = "batch_monitor.farms."+farmengine
+		module = importlib.import_module(modname)
+		clsmembers = inspect.getmembers(module, inspect.isclass)
+		for m in clsmembers:
+			if m[1].__module__ == modname:
+				fs_class = getattr(module, m[0])
+				farm_obj = fs_class(remote)
 
-	def check(self, timeout):
-		self.thread.join(timeout)
-		if self.thread.is_alive():
-			print("Terminating " + self.tid + " process: " + self.cmd + " at " + datetime.datetime.now())
-			self.process.terminate()
-			#self.thread.join()
-			self.terminated = True
+	return fs_obj, farm_obj
 
-		return self.cout, self.cerr, self.terminated, self.errno
+def fetch_data(fs_obj, farm_obj, countdown=0):
+	co1 = ""
+	co2 = ""
+	errno1 = 255
+	errno2 = 255
 
-def fetch_data(remote, countdown=0):
-	if remote is not None:
-		cmd1 = "{:s} diagnose -f".format(remote)
-		cmd2 = "{:s} qstat -n -1".format(remote)
-	else:
-		cmd1 = "diagnose -f"
-		cmd2 = "qstat -n -1"
+	if fs_obj:
+		co1, errno1 = fs_obj.fetch()
 
-	#remote = None
-	#cmd1 = "cat batch_monitor/diagnose.txt;"
-	#cmd2 = "cat batch_monitor/qstat.txt"
-
-	command1 = Command("p1", cmd1)
-	command2 = Command("p2", cmd2)
-
-	while True:
-		command1.run()
-		command2.run()
-
-		co1, ce1, ter1, errno1 = command1.check(timeout=2)
-		co2, ce2, ter2, errno2 = command2.check(timeout=2)
-
-		if countdown == 0 or not ter1 and not ter2:
-			break
-		else:
-			countdown -=1
+	if farm_obj:
+		co2, errno2 = farm_obj.fetch()
 
 	return co1, co2, errno1, errno2
 
-def fetch_diagnose(remote):
-	if remote is not None:
-		cmd = "{:s} diagnose -f".format(remote)
-	else:
-		#cmd = "diagnose -f"
-		cmd = "cat batch_monitor/diagnose.txt"
+def parse_data(fs_obj, farm_obj, list_users, list_jobs):
+	co1 = ""
+	co2 = ""
+	errno1 = 255
+	errno2 = 255
 
-	proc = subprocess.Popen(
-		cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-	)
+	if fs_obj:
+		_users = fs_obj.parse()
+		for u in xrange(len(_users)):
+			_u = _users[u]
+			if _u.name not in list_users:
+				print("Adding user " + _uname)
+				users_list[_u.name] = _u
 
-	cout, cerr = proc.communicate()
-	return cout
+	if farm_obj:
+		_jobs = farm_obj.parse()
 
-def fetch_qstat(remote):
-	if remote is not None:
-		cmd = "{:s} qstat -n -1".format(remote)
-	else:
-		#cmd = "qstat -n -1"
-		cmd = "cat batch_monitor/qstat.txt"
+		update_jobs_list(list_jobs, list_users, _jobs)
+		validate_jobs_list(list_jobs, list_users)
+		cleanup_jobs_list(list_jobs, list_users)
 
-	proc = subprocess.Popen(
-		cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-	)
-
-	cout, cerr = proc.communicate()
-	return cout
-
-def parse_diagnose(data, users_list):
-	text = data
-
-	_waitline=0
-	_parse_user = False
-	_parse_group = False
-
-	for line in text.splitlines():
-		if line == "USER":
-			_parse_user = True
-			_waitline = 1
-			continue
-		if line == "GROUP":
-#			_parse_group = True
-			_waitline = 1
-			continue
-		if line == "":
-			_parse_user = _parse_group = False
-			continue
-
-		if _parse_user:
-			if _waitline > 0:
-				_waitline -= 1
-			else:
-				words = line.split()
-				if words[0][-1] == "*":
-					_uname = words[0][:-1]
-				else:
-					_uname = words[0]
-				_uname = _uname[0:8]
-
-				if _uname not in users_list:
-					print("Adding user " + _uname)
-					users_list[_uname] = UserData(_uname)
-
-				_fair = float(words[1])
-				users_list[_uname].clear()
-				users_list[_uname].fairshare = 100.0 - _fair
-
-def parse_qstat(data, jobs_list = []):
-	text = data
-
-	_waitline=0
-	_parse_jobs = False
-
+def update_jobs_list(jobs_list, users_list, last_jobs):
 	""" job list length to iterate on """
 	job_list_len = len(jobs_list)
+	""" counts jobs checked in the input list """
 	job_cnt = 0
-	has_jobs = False
 
-	for line in text.splitlines():
-		_l = line.split()
-		if len(_l) and _l[0] == "Job":
-			_parse_jobs = True
-			_waitline = 1
-			continue
 
-		if _parse_jobs:
-			if _waitline > 0:
-				_waitline -= 1
-				continue
+	""" if no jobs in the last check, all previous jobs are done """
+	last_jobs_len = len(last_jobs)
+
+	if not last_jobs_len:
+		for i in xrange(job_list_len):
+			jobs_list[i].mark_done()
+		return
+
+	for jd in last_jobs:
+		""" update users list, in case that fair_share system is not working """
+		""" FIXME: move to separate function """
+		if jd.name not in users_list:
+			print("Adding user " + jd.name)
+			users_list[jd.name] = UserData(jd.name)
+
+			_fair = 0.
+			users_list[jd.name].clear()
+			users_list[jd.name].fairshare = 100.0 - _fair
+
+		while True:
+			""" we reached end of the list, this job must be new then """
+			if job_cnt == job_list_len:
+				#print(" Adding job %d" % jd.jid)
+				#jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
+				jobs_list.append(jd)
+				break
+
 			else:
-				if len(line) == 0:
+				""" if jid is smaller than jid of current job """
+				if jobs_list[job_cnt].jid < jd.jid:
+					#print(" Removing job %d" % jobs_list[job_cnt].jid)
+					""" otherwise job we are comparing to is finished
+					mark as done and jump to next one """
+					jobs_list[job_cnt].mark_done()
+					#print(jd)
+					job_cnt += 1
 					continue
 
-				has_jobs = True
-				words = line.split()
+					""" update status of the job and break loop """
+				elif jobs_list[job_cnt].jid == jd.jid:
+					#print(" Updating job %d" % jobs_list[job_cnt].jid)
+					jobs_list[job_cnt].update_status(jd)
+					#print(jd)
+					job_cnt += 1
+					break
 
-				if len(words) == 0:
-					continue
-
-				_jid		= words[0]
-				_user		= words[1]
-				_farm		= words[2]
-				_reqtime	= words[8]
-				_status		= words[9]
-				_elatime	= words[10]
-
-				jid = int(_jid.split('.')[0])
-
-				while True:
-
-					""" we reached end of the list, this job must be new then """
-					if job_cnt == job_list_len:
-						#print(" Adding job %d" % jid)
-						jd = JobData(jid, _user, _farm, _status, _reqtime, _elatime)
-						jobs_list.append(jd)
-						break
-
-					else:
-						""" if jid is smaller than jid of current job """
-						if jobs_list[job_cnt].jid < jid:
-							#print(" Removing job %d" % jobs_list[job_cnt].jid)
-							""" otherwise job we are comparing to is finished
-							mark as done and jump to next one """
-							jobs_list[job_cnt].mark_done()
-							job_cnt += 1
-							continue
-
-							""" update status of the job and break loop """
-						elif jobs_list[job_cnt].jid == jid:
-							#print(" Updating job %d" % jobs_list[job_cnt].jid)
-							jobs_list[job_cnt].update_status(_status, _elatime)
-							job_cnt += 1
-							break
-
-						else:
-							print("Something went wrong with JID=%d..." % jid)
-							break
+				else:
+					print("Something went wrong with JID=%d..." % jid)
+					break
 
 	while job_cnt < job_list_len:
 		#print(" Removing finished job %d" % jobs_list[job_cnt].jid)
 		jobs_list[job_cnt].mark_done()
 		job_cnt += 1
-
-	if not has_jobs:
-		for i in xrange(job_list_len):
-			jobs_list[i].mark_done()
 
 def validate_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)
@@ -227,7 +144,6 @@ def validate_jobs_list(jobs_list, users_list):
 
 	""" adding finished jobs to queue of calculation time """
 	for i in xrange(jobs_len):
-
 		_name = jobs_list[i].name
 		_user = users_list[_name]
 
@@ -244,7 +160,7 @@ def validate_jobs_list(jobs_list, users_list):
 			_user.njobsT += 1
 			total_run += 1
 
-			if jobs_list[i].farm == "farmqe":
+			if jobs_list[i].farm[0:5] == "farmq":
 				_user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
 
 		elif jobs_list[i].is_hold():
@@ -282,7 +198,6 @@ def cleanup_jobs_list(jobs_list, users_list):
 	if rm_queue_sta != -1:
 		del jobs_list[0:rm_queue_sta+1]
 
-
 def parse_farm(farm):
 	global g_users, g_user_total
 
@@ -297,17 +212,22 @@ def parse_farm(farm):
 
 	g_ts.ts.append(time.mktime(datetime.datetime.now().timetuple()) * 1000)
 
-	#dia_out = fetch_diagnose(remote)
-	#qst_out = fetch_qstat(remote)
+	if farm.fs_engine == "":
+		fsengine_name = None
+	else:
+		fsengine_name = farm.fs_engine
 
-	dia_out, qst_out, dia_errno, qst_errno = fetch_data(remote)
+	if farm.farm_engine == "":
+		farmengine_name = None
+	else:
+		farmengine_name = farm.farm_engine
 
-	if dia_errno != 0 or qst_errno != 0:
+	fs_obj, farm_obj = import_modules(remote, fsengine_name, farmengine_name)
+
+	dia_out, qst_out, dia_errno, qst_errno = fetch_data(fs_obj, farm_obj)
+
+	if (fs_obj != None and dia_errno != 0) or (farm_obj != None and qst_errno != 0):
 		return False
-
-	#print(dia_out, qst_out)
-	dia_out = dia_out.decode("UTF-8")
-	qst_out = qst_out.decode("UTF-8")
 
 	g_users = cache.get("users_list", None)
 	if g_users is None:
@@ -318,11 +238,12 @@ def parse_farm(farm):
 
 	g_jobs = cache.get("jobs_list", [])
 
-	parse_diagnose(dia_out, g_users)
-	parse_qstat(qst_out, g_jobs)
+	parse_data(fs_obj, farm_obj, g_users, g_jobs)
+	#parse_diagnose(dia_out, g_users)
+	#parse_qstat(qst_out, g_jobs)
 
-	validate_jobs_list(g_jobs, g_users)
-	cleanup_jobs_list(g_jobs, g_users)
+	#validate_jobs_list(g_jobs, g_users)
+	#cleanup_jobs_list(g_jobs, g_users)
 
 	g_view_list = []
 	g_view_list.append('ALL')

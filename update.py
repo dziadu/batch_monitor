@@ -92,9 +92,9 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
 			print("Adding user " + jd.name)
 			users_list[jd.name] = UserData(jd.name)
 
-			_fair = 0.
-			users_list[jd.name].clear()
-			users_list[jd.name].fairshare = 100.0 - _fair
+		_fair = 0.
+		users_list[jd.name].clear()
+		users_list[jd.name].fairshare = 100.0 - _fair
 
 		while True:
 			""" we reached end of the list, this job must be new then """

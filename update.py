@@ -49,7 +49,7 @@ def fetch_data(fs_obj, farm_obj, countdown=0):
 
 	return co1, co2, errno1, errno2
 
-def parse_data(fs_obj, farm_obj, list_users, list_jobs):
+def parse_data(fs_obj, farm_obj, jobs_list, users_list):
 	co1 = ""
 	co2 = ""
 	errno1 = 255
@@ -59,16 +59,16 @@ def parse_data(fs_obj, farm_obj, list_users, list_jobs):
 		_users = fs_obj.parse()
 		for u in xrange(len(_users)):
 			_u = _users[u]
-			if _u.name not in list_users:
+			if _u.name not in users_list:
 				print("Adding user " + _uname)
 				users_list[_u.name] = _u
 
 	if farm_obj:
 		_jobs = farm_obj.parse()
 
-		update_jobs_list(list_jobs, list_users, _jobs)
-		validate_jobs_list(list_jobs, list_users)
-		cleanup_jobs_list(list_jobs, list_users)
+		update_jobs_list(jobs_list, users_list, _jobs)
+		validate_jobs_list(jobs_list, users_list)
+		cleanup_jobs_list(jobs_list, users_list)
 
 def update_jobs_list(jobs_list, users_list, last_jobs):
 	""" job list length to iterate on """
@@ -91,10 +91,6 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
 		if jd.name not in users_list:
 			print("Adding user " + jd.name)
 			users_list[jd.name] = UserData(jd.name)
-
-		_fair = 0.
-		users_list[jd.name].clear()
-		users_list[jd.name].fairshare = 100.0 - _fair
 
 		while True:
 			""" we reached end of the list, this job must be new then """
@@ -238,7 +234,7 @@ def parse_farm(farm):
 
 	g_jobs = cache.get("jobs_list", [])
 
-	parse_data(fs_obj, farm_obj, g_users, g_jobs)
+	parse_data(fs_obj, farm_obj, g_jobs, g_users)
 	#parse_diagnose(dia_out, g_users)
 	#parse_qstat(qst_out, g_jobs)
 

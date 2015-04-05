@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from batch_monitor.models import BatchHostSettings
 from decorators import json_response
+from django.shortcuts import get_object_or_404, render
 
 label_tj = 'Total jobs'
 label_rj = 'Running jobs'

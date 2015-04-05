@@ -236,8 +236,8 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 	chart_time_subtitle(chart)
 
 	render_label(chart, 'Running jobs', 0.17, 0.10)
-	render_label(chart, 'Hold jobs', 0.50, 0.10)
-	render_label(chart, 'Queued jobs', 0.83, 0.10)
+	render_label(chart, 'Queued jobs', 0.50, 0.10)
+	render_label(chart, 'Hold jobs', 0.83, 0.10)
 
 	chart.series[0].update({
 		center: [ chart.plotLeft + (0.17 * chart.plotWidth)-30, '50%' ],

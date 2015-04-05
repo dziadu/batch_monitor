@@ -222,7 +222,7 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 						})
 					jsondata.pie.splice(jsondata.pie.indexOf(res_pie[0]), 1)
 				} else {
-					chart.series[i].data = null
+					chart.series[i].setData(null)
 				}
 			}
 

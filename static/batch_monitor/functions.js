@@ -16,7 +16,7 @@ function getObjects(obj, key, val) {
 }
 
 // configure periodical update of the time chart
-function time_chart_updater(farm, chart, chart_type) {
+function time_chart_updater(farm, chart, chart_data_type) {
 	var f = function() {
 		if (chart.series.length) {
 			var keys = chart.series[0].xData;
@@ -26,7 +26,7 @@ function time_chart_updater(farm, chart, chart_type) {
 		else
 			lastts=null
 
-		$.getJSON('/monitor/'+farm+'/json/'+chart_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
+		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -78,9 +78,9 @@ function time_chart_updater(farm, chart, chart_type) {
 }
 
 // configure periodical update of the hist chart
-function hist_chart_updater(farm, chart, chart_type) {
+function hist_chart_updater(farm, chart, chart_data_type) {
 	var f = function() {
-		$.getJSON('/monitor/'+farm+'/json/'+chart_type+'/?callback=?', function(jsondata) {
+		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -130,9 +130,9 @@ function hist_chart_updater(farm, chart, chart_type) {
 }
 
 // configure periodical update of the scatter+pie charts
-function scatter_chart_updater(farm, chart, chart_type) {
+function scatter_chart_updater(farm, chart, chart_data_type) {
 	var f = function() {
-		$.getJSON('/monitor/'+farm+'/json/'+chart_type+'/?callback=?', function(jsondata) {
+		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -196,6 +196,81 @@ function scatter_chart_updater(farm, chart, chart_type) {
 
 	// set up the updating of the chart each second
 	setInterval(function() {f()}, update_period_ms);
+}
+
+// configure periodical update of the scatter+pie charts
+function pie_chart_updater(farm, chart, chart_data_type) {
+	var f = function() {
+		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
+			if (jsondata == null)
+				return
+
+			var s_len = jsondata.result.length;
+			if (s_len == 0)
+				return;
+
+			var s_len = chart.series.length;
+			for (_i = s_len; _i > 0; _i--) {
+				var i = _i-1;
+				var res_pie = getObjects(jsondata.pie, 'name', chart.series[i].name)
+				if (res_pie.length == 1) {
+					chart.series[i].setData(res_pie[0].data)
+					var d_len = res_pie[0].data.length
+					for (j = 0; j < d_len; j++)
+						chart.series[i].data[j].update({
+							color: Highcharts.getOptions().colors[ res_pie[0].data[j]._color ]
+						})
+					jsondata.pie.splice(jsondata.pie.indexOf(res_pie[0]), 1)
+				} else {
+					chart.series[i].data = null
+				}
+			}
+
+			chart.redraw();
+		});
+
+		chart_time_subtitle(chart)
+	}
+
+// 	f();
+	chart_time_subtitle(chart)
+
+	render_label(chart, 'Running jobs', 0.17, 0.10)
+	render_label(chart, 'Hold jobs', 0.50, 0.10)
+	render_label(chart, 'Queued jobs', 0.83, 0.10)
+
+	chart.series[0].update({
+		center: [ chart.plotLeft + (0.17 * chart.plotWidth)-30, '50%' ],
+	});
+	chart.series[1].update({
+		center: [ chart.plotLeft + (0.50 * chart.plotWidth)-30, '50%' ],
+	});
+	chart.series[1].update({
+		center: [ chart.plotLeft + (0.83 * chart.plotWidth)-30, '50%' ],
+	});
+
+	// set up the updating of the chart each second
+	setInterval(function() {f()}, update_period_ms);
+}
+
+function render_label(chart, text, center_x, center_y) {
+	elem = chart.renderer.label(text, chart.plotLeft, 0, 'callout', 0, 0)
+		.css({
+			color: '#FFFFFF',
+		}).attr({
+			fill: 'rgba(0, 0, 0, 0.75)',
+			padding: 8,
+			r: 5,
+			zIndex: 6,
+		})
+		.add();
+
+	box = elem.getBBox();
+
+	elem.attr({
+		x: chart.plotLeft + (center_x * chart.plotWidth) - (0.5 * box.width),
+		y: chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height),
+	})
 }
 
 function chart_time_subtitle(chart) {

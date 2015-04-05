@@ -8,9 +8,6 @@ import importlib, inspect
 
 from django.core.cache import cache
 
-g_users = None
-g_user_total = None
-
 def import_modules(remote, fsengine, farmengine):
 	fs_obj = None
 	farm_obj = None
@@ -195,8 +192,6 @@ def cleanup_jobs_list(jobs_list, users_list):
 		del jobs_list[0:rm_queue_sta+1]
 
 def parse_farm(farm):
-	global g_users, g_user_total
-
 	if farm.host == "localhost":
 		remote = None
 	else:
@@ -230,19 +225,14 @@ def parse_farm(farm):
 		g_users = collections.OrderedDict()
 		g_users['ALL'] = UserData('All users')
 
-	g_user_total = g_users['ALL']
-
 	g_jobs = cache.get("jobs_list", [])
 
 	parse_data(fs_obj, farm_obj, g_jobs, g_users)
-	#parse_diagnose(dia_out, g_users)
-	#parse_qstat(qst_out, g_jobs)
 
 	#validate_jobs_list(g_jobs, g_users)
 	#cleanup_jobs_list(g_jobs, g_users)
 
 	g_view_list = []
-	g_view_list.append('ALL')
 
 	for u in g_users.keys():
 		#g_users[u].fill()
@@ -252,6 +242,8 @@ def parse_farm(farm):
 		if val.viscnt > 0:
 			if u != 'ALL':
 				g_view_list.append(u)
+
+	g_view_list.append('ALL')
 
 	cache.set("time_stamp", g_ts)
 	cache.set("users_list", g_users)

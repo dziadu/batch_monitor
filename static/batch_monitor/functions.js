@@ -205,10 +205,6 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 			if (jsondata == null)
 				return
 
-			var s_len = jsondata.result.length;
-			if (s_len == 0)
-				return;
-
 			var s_len = chart.series.length;
 			for (_i = s_len; _i > 0; _i--) {
 				var i = _i-1;

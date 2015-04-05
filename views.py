@@ -340,11 +340,6 @@ def format_embedded_pie_chart(title, pie_data, center, size='40%'):
 		'dataLabels': {
 			'enabled': True
 		},
-		'labels': {
-			'items': [{
-				'html': 'Running jobssss',
-			}]
-		},
 	}
 	return chart
 

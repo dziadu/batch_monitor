@@ -60,8 +60,9 @@ class Slurm(FarmEngine):
 
 		days_hours = text.split("-")
 		only_days = 0
-		if len(days_hours > 1):
-			only_days = int(days_hours[0]) * 24 * 60 * 60 """ seconds per days """
+		if len(days_hours) > 1:
+			""" seconds per days """
+			only_days = int(days_hours[0]) * 24 * 60 * 60
 			only_time = days_hours[1]
 		else:
 			only_time = text

@@ -58,7 +58,15 @@ class Slurm(FarmEngine):
 		if text == "NOT_SET":
 			text = "00:00:00"
 
-		time = text.split(":")
+		days_hours = text.split("-")
+		only_days = 0
+		if len(days_hours > 1):
+			only_days = int(days_hours[0]) * 24 * 60 * 60 """ seconds per days """
+			only_time = days_hours[1]
+		else:
+			only_time = text
+
+		time = only_time.split(":")
 		_len = len(time)
 
 		total_time = int(time[_len-1])
@@ -66,7 +74,7 @@ class Slurm(FarmEngine):
 		for i in xrange(_len-2,-1,-1):
 			total_time += int(time[i]) * 60
 
-		return total_time
+		return only_days + total_time
 
 	def status_decode(self, status):
 		if status == "PENDING":

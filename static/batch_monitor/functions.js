@@ -236,13 +236,13 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 	render_label(chart, 'Hold jobs', 0.83, 0.10)
 
 	chart.series[0].update({
-		center: [ chart.plotLeft + (0.17 * chart.plotWidth), '50%' ],
+		center: [ chart.plotLeft + (0.17 * (chart.plotWidth-60)), '50%' ],
 	});
 	chart.series[1].update({
-		center: [ chart.plotLeft + (0.50 * chart.plotWidth), '50%' ],
+		center: [ chart.plotLeft + (0.50 * (chart.plotWidth-60)), '50%' ],
 	});
 	chart.series[1].update({
-		center: [ chart.plotLeft + (0.83 * chart.plotWidth), '50%' ],
+		center: [ chart.plotLeft + (0.83 * (chart.plotWidth-60)), '50%' ],
 	});
 
 	// set up the updating of the chart each second
@@ -264,7 +264,7 @@ function render_label(chart, text, center_x, center_y) {
 	box = elem.getBBox();
 
 	elem.attr({
-		x: chart.plotLeft + (center_x * chart.plotWidth) - (0.5 * box.width) + 30,
+		x: chart.plotLeft + (center_x * (chart.plotWidth-60)) - (0.5 * box.width) + 30,
 		y: chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height),
 	})
 }

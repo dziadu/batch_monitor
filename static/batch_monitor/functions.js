@@ -1,6 +1,6 @@
 // find all keys with given value in object
 
-var update_period_ms = 60000;
+var update_period_ms = 6000;
 
 function getObjects(obj, key, val) {
 	var objects = [];
@@ -70,7 +70,7 @@ function time_chart_updater(farm, chart, chart_data_type) {
 		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
 	chart_time_subtitle(chart)
 
 	// set up the updating of the chart each second
@@ -122,7 +122,7 @@ function hist_chart_updater(farm, chart, chart_data_type) {
 		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
 	chart_time_subtitle(chart)
 
 	// set up the updating of the chart each second
@@ -228,12 +228,12 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
 	chart_time_subtitle(chart)
 
-	render_label(chart, 'Running jobs', 0.17, 0.10)
-	render_label(chart, 'Queued jobs', 0.50, 0.10)
-	render_label(chart, 'Hold jobs', 0.83, 0.10)
+	render_label(chart, 'Total jobs', 0.17, 0.10)
+	render_label(chart, 'Running jobs', 0.50, 0.10)
+	render_label(chart, 'Queued jobs', 0.83, 0.10)
 
 	chart.series[0].update({
 		center: [ chart.plotLeft + (0.17 * (chart.plotWidth-60)), '50%' ],
@@ -241,7 +241,7 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 	chart.series[1].update({
 		center: [ chart.plotLeft + (0.50 * (chart.plotWidth-60)), '50%' ],
 	});
-	chart.series[1].update({
+	chart.series[2].update({
 		center: [ chart.plotLeft + (0.83 * (chart.plotWidth-60)), '50%' ],
 	});
 

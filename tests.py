@@ -9,19 +9,15 @@ from django.test import TestCase
 
 import collections
 import update
-from batch_monitor.models import UserData, JobData, TimeData
+#from batch_monitor.models import UserData, JobData, TimeData
+from batch_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
 class SimpleTest(TestCase):
-	def test_basic_addition(self):
-		"""
-		Tests that 1 + 1 always equals 2.
-		"""
-		self.assertEqual(1 + 1, 2)
-
 	def test_update_fetch_data_bad_addr(self):
 		remote = "ssh -o 'BatchMode yes' badaddress"
 
-		co1, co2, errno1, errno2 = update.fetch_data(remote)
+		fs_obj, farm_obj = update.import_modules(remote, None, "slurm")
+		co1, co2, errno1, errno2 = update.fetch_data(fs_obj, farm_obj)
 
 		self.assertEqual(errno1, 255)
 		self.assertEqual(errno2, 255)
@@ -31,7 +27,8 @@ class SimpleTest(TestCase):
 	def test_update_fetch_data_bad_cmd(self):
 		remote = "sssh -o 'BatchMode yes' localhost"
 
-		co1, co2, errno1, errno2 = update.fetch_data(remote)
+		fs_obj, farm_obj = update.import_modules(remote, None, "slurm")
+		co1, co2, errno1, errno2 = update.fetch_data(fs_obj, farm_obj)
 
 		self.assertEqual(errno1, 127)
 		self.assertEqual(errno2, 127)
@@ -41,7 +38,8 @@ class SimpleTest(TestCase):
 	def test_update_fetch_data_fail_batch_mode(self):
 		remote = "ssh -o 'BatchMode yes' localhost"
 
-		co1, co2, errno1, errno2 = update.fetch_data(remote)
+		fs_obj, farm_obj = update.import_modules(remote, None, "slurm")
+		co1, co2, errno1, errno2 = update.fetch_data(fs_obj, farm_obj)
 
 		self.assertEqual(errno1, 255)
 		self.assertEqual(errno2, 255)
@@ -51,7 +49,8 @@ class SimpleTest(TestCase):
 	def test_update_fetch_data_fail_batch_mode(self):
 		remote = "ssh -o 'BatchMode yes' unknows@localhost"
 
-		co1, co2, errno1, errno2 = update.fetch_data(remote)
+		fs_obj, farm_obj = update.import_modules(remote, None, "slurm")
+		co1, co2, errno1, errno2 = update.fetch_data(fs_obj, farm_obj)
 
 		self.assertEqual(errno1, 255)
 		self.assertEqual(errno2, 255)
@@ -61,7 +60,7 @@ class SimpleTest(TestCase):
 		self.assertEqual(errno2 == 255 and co2 is not None, True)
 
 	def test_update_parse_qstat_for_jobs(self):
-
+		return
 		jobs1 = ("\n\n"
 			"Job ID               Username Queue    Jobname    SessID NDS   TSK Memory Time  S Time\n"
 			"-------------------- -------- -------- ---------- ------ ----- --- ------ ----- - -----\n"
@@ -180,4 +179,84 @@ class SimpleTest(TestCase):
 		self.assertEqual(test_user.njobsT, 0)
 		self.assertEqual(test_user.njobsQ, 0)
 		self.assertEqual(test_user.njobsR, 0)
+		self.assertEqual(test_user.njobsH, 0)
+
+	def test_update_slurm(self):
+		jobs1 = (
+			"JOBID USER PARTITION TIME_LIMIT STATE TIME\n"
+			"7574 rlalik farmq 10:00 RUNNING 0:15\n"
+			"7576 rlalik farmq 10:00 RUNNING 0:15\n")
+
+		jobs2 = (
+			"JOBID USER PARTITION TIME_LIMIT STATE TIME\n"
+			"7574 rlalik farmq 10:00 RUNNING 0:15\n"
+			"7576 rlalik farmq 10:00 RUNNING 0:15\n"
+			"7577 tkunz farmq 10:00 RUNNING 0:15\n"
+			"7578 tkunz farmq 10:00 RUNNING 0:15\n"
+			"7579 tkunz farmq 10:00 RUNNING 0:15\n"
+			"7580 tkunz farmq 10:00 RUNNING 0:15\n")
+
+		jobs3 = (
+			"JOBID USER PARTITION TIME_LIMIT STATE TIME\n"
+			"7576 rlalik farmq 10:00 RUNNING 0:15\n"
+			"7578 tkunz farmq 10:00 RUNNING 0:15\n"
+			"7579 tkunz farmq 10:00 RUNNING 0:15\n"
+			"7580 tkunz farmq 10:00 RUNNING 0:15\n")
+
+		jobs_list = []
+		users_list = collections.OrderedDict()
+		users_list['ALL'] = UserData('ALL')
+
+		fs_obj, farm_obj = update.import_modules("", None, "slurm")
+
+		""" test 1 """
+		farm_obj.data = jobs1
+		update.parse_data(fs_obj, farm_obj, jobs_list, users_list)
+
+		exp_len = 2
+		self.assertEqual(len(jobs_list), exp_len)
+		self.assertEqual(jobs_list[0].jid, 7574)
+		self.assertEqual(jobs_list[exp_len-1].jid, 7576)
+		test_user = users_list['rlalik']
+		self.assertEqual(test_user.njobsT, exp_len)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 2)
+		self.assertEqual(test_user.njobsH, 0)
+
+		""" test 2 """
+		farm_obj.data = jobs2
+		update.parse_data(fs_obj, farm_obj, jobs_list, users_list)
+
+		exp_len = 6
+		self.assertEqual(len(jobs_list), exp_len)
+		self.assertEqual(jobs_list[0].jid, 7574)
+		self.assertEqual(jobs_list[exp_len-1].jid, 7580)
+		test_user = users_list['rlalik']
+		self.assertEqual(test_user.njobsT, 2)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 2)
+		self.assertEqual(test_user.njobsH, 0)
+		test_user = users_list['tkunz']
+		self.assertEqual(test_user.njobsT, 4)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 4)
+		self.assertEqual(test_user.njobsH, 0)
+
+		""" test 3 """
+		farm_obj.data = jobs3
+		update.parse_data(fs_obj, farm_obj, jobs_list, users_list)
+
+		exp_len = 4
+		self.assertEqual(len(jobs_list), exp_len)
+		self.assertEqual(jobs_list[0].jid, 7576)
+		self.assertEqual(jobs_list[exp_len-1].jid, 7580)
+		test_user = users_list['rlalik']
+		self.assertEqual(test_user.njobsT, 1)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 1)
+		self.assertEqual(test_user.njobsH, 0)
+		test_user = users_list['tkunz']
+		self.assertEqual(test_user.njobsT, 3)
+		self.assertEqual(test_user.njobsQ, 0)
+		self.assertEqual(test_user.njobsR, 3)
 		self.assertEqual(test_user.njobsH, 0)

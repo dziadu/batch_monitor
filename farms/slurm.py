@@ -9,6 +9,9 @@ class Slurm(FarmEngine):
 		self.cmd = "squeue -S i -o \\\"%A %u %P %l %T %M\\\""
 
 	def parse(self):
+		if self.data is None:
+			return []
+
 		text = self.data
 		jobs_list = []
 

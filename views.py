@@ -1,6 +1,7 @@
 # Create your views here.
 
 from django.core.cache import cache
+from django.conf import settings
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
@@ -67,33 +68,43 @@ def monitor(request, farm_id):
 	farm = get_object_or_404(BatchHostSettings, id=farm_id)
 	d = dict()
 	d['farm'] = farm
-	data_series_tj = cache.get('data_ser_tj', None)
+	data_series_tj = cache.get('data_trend_tj', None)
 
 	if data_series_tj is None:
 		prepare_data(farm_id)
 
-	data_series_tj = cache.get('data_ser_tj', None)
-	data_series_rj = cache.get('data_ser_rj', None)
-	data_group_rj = cache.get('data_rj_f', None)
-	data_group_qj = cache.get('data_qj_f', None)
-	data_group_hj = cache.get('data_hj_f', None)
-	data_series_fs = cache.get('data_fs', None)
-	data_group_jp = cache.get('data_jp', None)
-	data_series_jct = cache.get('data_jct', None)
+	if hasattr(settings, 'BATCH_FARM_SEND_INITIAL_DATA') and settings.BATCH_FARM_SEND_INITIAL_DATA == True:
+		data_series_tj = cache.get('data_trend_tj', [])
+		data_series_rj = cache.get('data_trend_rj', [])
+		data_series_fs = cache.get('data_trend_fs', [])
+		data_hist_jct = cache.get('data_hist_jct', [])
+		data_dist_jp = cache.get('data_dist_jp', [])
+		data_group_tj = cache.get('data_tj_f', [])
+		data_group_rj = cache.get('data_rj_f', [])
+		data_group_qj = cache.get('data_qj_f', [])
+	else:
+		data_series_tj = []
+		data_series_rj = []
+		data_series_fs = []
+		data_hist_jct = []
+		data_dist_jp = []
+		data_group_tj = []
+		data_group_rj = []
+		data_group_qj = []
 
-	chart_tj = format_time_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
-	chart_rj = format_time_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
-	chart_fs = format_time_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
-	chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_series_jct)
+	chart_tj = format_trend_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
+	chart_rj = format_trend_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
+	chart_fs = format_trend_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
+	chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_hist_jct)
 
-	pie_chart_rj = format_embedded_pie_chart(label_rj, data_group_rj, [ '17%', '50%' ])
-	pie_chart_qj = format_embedded_pie_chart(label_qj, data_group_qj, [ '50%', '50%' ])
-	pie_chart_hj = format_embedded_pie_chart(label_hj, data_group_hj, [ '83%', '50%' ])
+	pie_chart_tj = format_embedded_pie_chart(label_tj, data_group_tj, [ '17%', '50%' ])
+	pie_chart_rj = format_embedded_pie_chart(label_rj, data_group_rj, [ '50%', '50%' ])
+	pie_chart_qj = format_embedded_pie_chart(label_qj, data_group_qj, [ '83%', '50%' ])
 
-	scatter_pie_all_data = data_group_jp + [ pie_chart_qj, pie_chart_hj]
-	embedded_pie_all = [ pie_chart_rj, pie_chart_qj, pie_chart_hj]
+	scatter_pie_all_data = data_dist_jp
+	embedded_pie_all = [ pie_chart_tj, pie_chart_rj, pie_chart_qj]
 
-	chart_jp = format_scatter_plot(farm_id, 'jp', label_jp, data=scatter_pie_all_data)
+	chart_jp = format_dist_plot(farm_id, 'jp', label_jp, data=scatter_pie_all_data)
 	chart_js = format_pie_chart(farm_id, 'js', 'Jobs summary', data=embedded_pie_all)
 
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct, chart_js]
@@ -105,14 +116,14 @@ def prepare_data(farm):
 	data_list_ts = []
 	data_series_tj = []
 	data_series_rj = []
+	data_series_fs = []
+
+	data_hist_jct = []
+	data_dist_jp = []
+
+	data_group_tj = []
 	data_group_rj = []
 	data_group_qj = []
-	data_group_hj = []
-
-	data_series_fs = []
-	data_group_jp = []
-
-	data_series_jct = []
 
 	g_ts = cache.get("time_stamp", None)
 
@@ -131,14 +142,14 @@ def prepare_data(farm):
 			idx = g_users.keys().index(u)
 			col_idx = len(data_series_tj)
 
-			_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
-			_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
+			_ltj = [list(a) for a in zip(data_list_ts[-len(val.q_njobsT):], list(val.q_njobsT))]
+			_lrj = [list(a) for a in zip(data_list_ts[-len(val.q_njobsR):], list(val.q_njobsR))]
 
+			_n_tj = val.q_njobsT[len(val.q_njobsT)-1]
 			_n_rj = val.q_njobsR[len(val.q_njobsR)-1]
 			_n_qj = val.q_njobsQ[len(val.q_njobsQ)-1]
-			_n_hj = val.q_njobsH[len(val.q_njobsH)-1]
 
-			_lfs = [list(a) for a in zip(data_list_ts, list(val.q_fairshare))]
+			_lfs = [list(a) for a in zip(data_list_ts[-len(val.q_njobsT):], list(val.q_fairshare))]
 			_ljp = list(val.l_jobprogress)
 			
 			_ljct = histogramize(val.q_calctime, 24, 0, 120)
@@ -146,16 +157,16 @@ def prepare_data(farm):
 			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-			data_group_jp.append({ 'name' : val.name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_dist_jp.append({ 'name' : val.name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
+			if _n_tj > 0:
+				data_group_tj.append({ 'name' : val.name, 'y': _n_tj, '_color': col_idx })
 			if _n_rj > 0:
 				data_group_rj.append({ 'name' : val.name, 'y': _n_rj, '_color': col_idx })
 			if _n_qj > 0:
 				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, '_color': col_idx })
-			if _n_hj > 0:
-				data_group_hj.append({ 'name' : val.name, 'y': _n_hj, '_color': col_idx })
 
-			data_series_jct.append({ 'name' : val.name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_hist_jct.append({ 'name' : val.name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
 
 		val = g_users['ALL']
@@ -167,14 +178,18 @@ def prepare_data(farm):
 		data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 		data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
-	cache.set('data_ser_tj', data_series_tj)
-	cache.set('data_ser_rj', data_series_rj)
+	cache.set('data_trend_tj', data_series_tj)
+	cache.set('data_trend_rj', data_series_rj)
+	cache.set('data_trend_fs', data_series_fs)
+	cache.set('data_hist_jct', data_hist_jct)
+	cache.set('data_dist_jp', data_dist_jp)
+	cache.set('data_pie_tj', data_group_tj)
 	cache.set('data_pie_rj', data_group_rj)
 	cache.set('data_pie_qj', data_group_qj)
-	cache.set('data_pie_hj', data_group_hj)
-	cache.set('data_ser_fs', data_series_fs)
-	cache.set('data_jp', data_group_jp)
-	cache.set('data_jct', data_series_jct)
+
+	for i in xrange(len(data_group_tj)):
+		_c = data_group_tj[i]['_color']
+		data_group_tj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
 	for i in xrange(len(data_group_rj)):
 		_c = data_group_rj[i]['_color']
@@ -184,15 +199,11 @@ def prepare_data(farm):
 		_c = data_group_qj[i]['_color']
 		data_group_qj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-	for i in xrange(len(data_group_hj)):
-		_c = data_group_hj[i]['_color']
-		data_group_hj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
-
+	cache.set('data_tj_f', data_group_tj)
 	cache.set('data_rj_f', data_group_rj)
 	cache.set('data_qj_f', data_group_qj)
-	cache.set('data_hj_f', data_group_hj)
 
-def format_time_plot(farm, chart_data_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
+def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
 			'type': 'line',
@@ -250,7 +261,7 @@ def format_hist_plot(farm, chart_data_type, title, series_data, xlabel='Time', y
 
 	return chart
 
-def format_scatter_plot(farm, chart_data_type, title, data=[], xlabel='Requested time [min]', ylabel='Progress [%]'):
+def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested time [min]', ylabel='Progress [%]'):
 	chart = {
 		'chart':{
 			'type': 'scatter',
@@ -342,7 +353,6 @@ def format_embedded_pie_chart(title, pie_data, center, size='40%'):
 		},
 	}
 	return chart
-
 
 def histogramize(data, bins, bmin, bmax):
 	tick = float(bmax - bmin)/bins

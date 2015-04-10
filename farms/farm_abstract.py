@@ -78,7 +78,7 @@ class JobData():
 		self.status = status
 
 	def requested(self):
-		return self.req_time
+		return self.req_time/60
 
 	def progress(self):
 		if (self.req_time):

@@ -201,8 +201,6 @@ def parse_farm(farm):
 	if g_ts is None:
 		g_ts = TimeData()
 
-	g_ts.ts.append(time.mktime(datetime.datetime.now().timetuple()) * 1000)
-
 	if farm.fs_engine == "":
 		fsengine_name = None
 	else:
@@ -220,6 +218,8 @@ def parse_farm(farm):
 	if (fs_obj != None and dia_errno != 0) or (farm_obj != None and qst_errno != 0):
 		return False
 
+	g_ts.ts.append(time.mktime(datetime.datetime.now().timetuple()) * 1000)
+
 	g_users = cache.get("users_list", None)
 	if g_users is None:
 		g_users = collections.OrderedDict()
@@ -228,9 +228,6 @@ def parse_farm(farm):
 	g_jobs = cache.get("jobs_list", [])
 
 	parse_data(fs_obj, farm_obj, g_jobs, g_users)
-
-	#validate_jobs_list(g_jobs, g_users)
-	#cleanup_jobs_list(g_jobs, g_users)
 
 	g_view_list = []
 

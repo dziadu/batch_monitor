@@ -98,7 +98,7 @@ def monitor(request, farm_id):
 	chart_tj = format_trend_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
 	chart_rj = format_trend_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
 	chart_fs = format_trend_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
-	chart_uct = format_trend_plot(farm_id, 'uct', label_uct, series_data=data_series_uct)
+	chart_uct = format_trend_plot(farm_id, 'uct', label_uct, series_data=data_series_uct, ylabel='Time [s]')
 
 	chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_hist_jct)
 

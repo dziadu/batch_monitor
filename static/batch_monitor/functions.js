@@ -71,6 +71,10 @@ function time_chart_updater(farm, chart, chart_data_type) {
 	}
 
 	f();
+	chart._reflow = function() {
+		chart.reflow();
+	}
+
 	chart_time_subtitle(chart)
 
 	// set up the updating of the chart each second
@@ -115,14 +119,17 @@ function hist_chart_updater(farm, chart, chart_data_type) {
 					index: jsondata.result[i].index,
 				})
 			}
-
 			chart.redraw();
 		});
 
 		chart_time_subtitle(chart)
 	}
+	chart._reflow = function() {
+		chart.reflow();
+	}
 
 	f();
+
 	chart_time_subtitle(chart)
 
 	// set up the updating of the chart each second
@@ -184,14 +191,18 @@ function scatter_chart_updater(farm, chart, chart_data_type) {
 					index: jsondata.result[i].index,
 				})
 			}
-
 			chart.redraw();
 		});
 
 		chart_time_subtitle(chart)
 	}
 
-// 	f();
+	f();
+
+	chart._reflow = function() {
+		chart.reflow();
+	}
+
 	chart_time_subtitle(chart)
 
 	// set up the updating of the chart each second
@@ -224,49 +235,76 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 
 			chart.redraw();
 		});
-
 		chart_time_subtitle(chart)
 	}
 
 	f();
+
+	chart._reflow = function() {
+		chart.reflow();
+		sub_pie_chart_updater(chart);
+	}
+
 	chart_time_subtitle(chart)
-
-	render_label(chart, 'Total jobs', 0.17, 0.10)
-	render_label(chart, 'Running jobs', 0.50, 0.10)
-	render_label(chart, 'Queued jobs', 0.83, 0.10)
-
-	chart.series[0].update({
-		center: [ chart.plotLeft + (0.17 * (chart.plotWidth-60)), '50%' ],
-	});
-	chart.series[1].update({
-		center: [ chart.plotLeft + (0.50 * (chart.plotWidth-60)), '50%' ],
-	});
-	chart.series[2].update({
-		center: [ chart.plotLeft + (0.83 * (chart.plotWidth-60)), '50%' ],
-	});
 
 	// set up the updating of the chart each second
 	setInterval(function() {f()}, update_period_ms);
 }
 
-function render_label(chart, text, center_x, center_y) {
-	elem = chart.renderer.label(text, chart.plotLeft, 0, 'callout', 0, 0)
-		.css({
-			color: '#FFFFFF',
-		}).attr({
-			fill: 'rgba(0, 0, 0, 0.75)',
-			padding: 8,
-			r: 5,
-			zIndex: 6,
+function sub_pie_chart_updater(chart) {
+	render_label(chart, 'rl_tj', 'Total jobs', 0.17, 0.10)
+	render_label(chart, 'rl_rj', 'Running jobs', 0.50, 0.10)
+	render_label(chart, 'rl_qj', 'Queued jobs', 0.83, 0.10)
+
+	sub_pie_pos(chart, chart.series[0], 0.17, '50%');
+	sub_pie_pos(chart, chart.series[1], 0.50, '50%');
+	sub_pie_pos(chart, chart.series[2], 0.83, '50%');
+// 	chart.series[0].update({
+// 		center: [ chart.plotLeft + (0.17 * (chart.plotWidth-60)), '50%' ],
+// 	});
+// 	chart.series[1].update({
+// 		center: [ chart.plotLeft + (0.50 * (chart.plotWidth-60)), '50%' ],
+// 	});
+// 	chart.series[2].update({
+// 		center: [ chart.plotLeft + (0.83 * (chart.plotWidth-60)), '50%' ],
+// 	});
+}
+
+
+function render_label(chart, label_id, text, center_x, center_y) {
+	elem = document.getElementById(label_id)
+
+	if (elem === null) {
+		elem = chart.renderer.label(text, chart.plotLeft, 0, 'callout', 0, 0)
+			.css({
+				color: '#FFFFFF',
+			}).attr({
+				id: label_id,
+				fill: 'rgba(0, 0, 0, 0.75)',
+				padding: 8,
+				r: 5,
+				zIndex: 6,
+			})
+		console.log(elem);
+		elem.add();
+
+		box = elem.getBBox();
+		elem.attr({
+			x: chart.plotLeft + (center_x * (chart.plotWidth-60)) - (0.5 * box.width) + 30,
+			y: chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height),
 		})
-		.add();
+	} else {
+		var new_x = chart.plotLeft + (center_x * (chart.plotWidth-60)) - (0.5 * box.width) + 30;
+		var new_y = chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height);
+		console.log(new_x);
+		elem.setAttribute('transform', "translate\(" + new_x + "," + new_y + ")");
+	}
+}
 
-	box = elem.getBBox();
-
-	elem.attr({
-		x: chart.plotLeft + (center_x * (chart.plotWidth-60)) - (0.5 * box.width) + 30,
-		y: chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height),
-	})
+function sub_pie_pos(chart, series, x, y) {
+	series.update({
+		center: [ chart.plotLeft + (x * (chart.plotWidth-60)), y ],
+	});
 }
 
 function chart_time_subtitle(chart) {

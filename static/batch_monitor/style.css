@@ -1,8 +1,11 @@
 body {
 	text-align: center;
 	margin: 0 auto;
-	background-color: #ababab;
+/* 	background-color: #ababab; */
 	padding: 0;
+/* 	margin: 0; */
+	padding: 0;
+	width: 90%;
 }
 
 div#top-links {
@@ -30,26 +33,82 @@ div#farmlist {
 	background-color: red;
 }
 
-div#charts {
-	width: 100%;
+.charts {
+/* 	width: 100%; */
+/* 	margin: 3em 0; */
+/*     padding: 7.5em 0 5.5em; */
+/*     background: #004756; */
+/* 	border: 1px solid blue; */
+}
+
+.gridster {
+	width: 90%;
+	height: auto;
 	margin: 0 auto;
+	border: 1px solid green;
+/* 	background: #004756; */
+
+	position:fixed !important;
+	position:absolute;
+	top: 45px;
+	right: 5px;
+	bottom: 5px;
+	left: 5px;
 }
 
-div.chart_box {
-	float: left;
-	display: inline-block;
-	width: 50%;
+.gridster ul, .gridster ol {
+	width: auto;
+	height: 100%;
+	list-style: none;
+	margin: 0;
+	padding: 20px;
 }
 
-div.chart_half_box {
-	float: left;
-	display: inline-block;
-	width: 25%;
+.gridster li {
+/* 	background: #004756; */
+/* 	width: 25%; */
+	padding: 0;
+	margin: 0;
+/* 	border: 1px dotted black; */
+}
+
+.gridster .gs-w {
+    background: #FFF;
+    cursor: pointer;
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+.gridster .preview-holder {
+	border: none!important;
+	background: red!important;
 }
 
 div.chart {
-	border: 1px solid black;
-/* 	width: 100%; */
-	height: 52%;
-	margin: 2px;
+/* 	border: 1px solid black; */
+	width: 100%;
+	height: 100%;
+/* 	margin-bottom: 20px; */
+	position: absolute;
+	top: 0px;
+
+}
+
+.highcharts-container{
+	width:100% !important;
+	height:100% !important;
+}
+
+.gridster header {
+	position: absolute;
+	top: 0px;
+	width: 10px;
+	height: 5px;
+	background: #123456;
+	color: blue;
+	font-size: 5px;
+	text-align: center;
+	height: 10px;
+	z-index: 99;
+	cursor: move;
 }

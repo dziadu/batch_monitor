@@ -206,13 +206,15 @@ def prepare_data(farm):
 def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
 	chart = {
 		'chart':{
+			'reflow': False,
 			'type': 'line',
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
 					" time_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
-					" }#@$"
-					, } },
+					" }#@$",
+				}
+			},
 		'title': {
 			'text': title },
 		'subtitle': {
@@ -313,7 +315,8 @@ def format_pie_chart(farm, chart_data_type, title, data=[]):
 				'load':
 					"$@#function() {"
 					" pie_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
-					" }#@$"
+					" }#@$",
+				'redraw': "$@#function(event) { /* console.log(' -> redraw: ', event); sub_pie_chart_updater(this); */ }#@$",
 			}
 		},
 		'title': {
@@ -351,6 +354,9 @@ def format_embedded_pie_chart(title, pie_data, center, size='40%'):
 		'dataLabels': {
 			'enabled': True
 		},
+		'events': {
+			'redraw': "$@#function(event) { /* console.log(' -> sub_redraw: ', event);  sub_pie_chart_updater(this); */ }#@$",
+		}
 	}
 	return chart
 

@@ -29,13 +29,15 @@ class UserData():
 		self.q_njobsQ = deque(maxlen=deque_len)
 		self.q_fairshare = deque(maxlen=deque_len)
 		self.l_jobprogress = []
-		self.q_calctime = deque(maxlen=calctime_len)
+		self.q_jcalctime = deque(maxlen=calctime_len)
+		self.q_ucalctime = deque(maxlen=deque_len)
 
 		self.njobsT = 0
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
 		self.fairshare = 100.0
+		self.nuserCT = 0
 
 	def clear(self):
 		self.njobsT = 0
@@ -43,6 +45,7 @@ class UserData():
 		self.njobsH = 0
 		self.njobsQ = 0
 		#self.fairshare = 100.0
+		self.nuserCT = 0
 		del self.l_jobprogress[:]
 
 	def fill(self):
@@ -53,6 +56,7 @@ class UserData():
 		self.q_njobsH.append(self.njobsH)
 		self.q_njobsQ.append(self.njobsQ)
 		self.q_fairshare.append(self.fairshare)
+		self.q_ucalctime.append(self.nuserCT)
 
 		#if self.njobsT > 0:
 			#self.viscnt = deque_len
@@ -88,6 +92,9 @@ class JobData():
 
 	def calc_time(self):
 		return self.ela_time/60
+
+	def calc_time_s(self):
+		return self.ela_time
 
 	def mark_done(self):
 		self.status = 3

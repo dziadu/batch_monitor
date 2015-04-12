@@ -37,37 +37,37 @@
 
 <div id="gridster" class="gridster">
 	<ul id="gridster_ul">
-	<li data-row="1" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="c11">
+	<li data-row="1" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="ctj">
 	<div id='container_tj' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="1" data-col="2" data-sizex="6" data-sizey="4" class="gs-w" id="c12">
+	<li data-row="1" data-col="7" data-sizex="6" data-sizey="4" class="gs-w" id="crj">
 	<div id='container_rj' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="2" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="c13">
+	<li data-row="2" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="cfs">
 	<div id='container_fs' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="2" data-col="2" data-sizex="3" data-sizey="4" class="gs-w" id="c14">
+	<li data-row="2" data-col="7" data-sizex="3" data-sizey="4" class="gs-w" id="cjct">
 	<div id='container_jct' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="2" data-col="3" data-sizex="3" data-sizey="4" class="gs-w" id="c21">
-	<div id='container_jp' class="chart jobrace"> Chart will be rendered here </div>
+	<li data-row="2" data-col="10" data-sizex="3" data-sizey="4" class="gs-w" id="cjp">
+	<div id='container_jp' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="3" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="c22">
+	<li data-row="3" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="cuct">
 	<div id='container_uct' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
-	<li data-row="3" data-col="2" data-sizex="6" data-sizey="4" class="gs-w" id="c22">
+	<li data-row="3" data-col="7" data-sizex="6" data-sizey="4" class="gs-w" id="cjs">
 	<div id='container_js' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
@@ -79,7 +79,7 @@
 <script src="{% static 'batch_monitor/gridster/dist/jquery.gridster.js' %}" type="text/javascript" charset="utf-8"></script>
 <script src="{% static 'batch_monitor/gridster_init.js' %}" type="text/javascript" charset="utf-8"></script>
 
-{{ charts|show_charts:"container_tj,container_rj,container_fs,container_jp,container_jct,container_js" }}
+{{ charts|show_charts:"container_tj,container_rj,container_fs,container_jp,container_jct,container_uct,container_js" }}
 
 
 </body>

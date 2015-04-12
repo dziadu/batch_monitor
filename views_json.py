@@ -32,6 +32,8 @@ def jsonreq(request, farm_id, data_type):
 		response_data = cache.get('data_trend_rj', None)
 	elif data_type == "fs":
 		response_data = cache.get('data_trend_fs', None)
+	elif data_type == "uct":
+		response_data = cache.get('data_trend_uct', None)
 	elif data_type == "jp":
 		response_data = cache.get('data_dist_jp', None)
 		return {

@@ -24,6 +24,7 @@ label_hj = 'Hold jobs'
 label_jp = 'Jobs race'
 label_fs = 'Fair share rank'
 label_jct = 'Jobs computing time'
+label_uct = 'Users computing time'
 
 class IndexView(generic.ListView):
 	template_name = 'batch_monitor/index.html'
@@ -77,6 +78,7 @@ def monitor(request, farm_id):
 		data_series_tj = cache.get('data_trend_tj', [])
 		data_series_rj = cache.get('data_trend_rj', [])
 		data_series_fs = cache.get('data_trend_fs', [])
+		data_series_uct = cache.get('data_trend_uct', [])
 		data_hist_jct = cache.get('data_hist_jct', [])
 		data_dist_jp = cache.get('data_dist_jp', [])
 		data_group_tj = cache.get('data_tj_f', [])
@@ -86,6 +88,7 @@ def monitor(request, farm_id):
 		data_series_tj = []
 		data_series_rj = []
 		data_series_fs = []
+		data_series_uct = []
 		data_hist_jct = []
 		data_dist_jp = []
 		data_group_tj = []
@@ -95,6 +98,8 @@ def monitor(request, farm_id):
 	chart_tj = format_trend_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
 	chart_rj = format_trend_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
 	chart_fs = format_trend_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
+	chart_uct = format_trend_plot(farm_id, 'uct', label_uct, series_data=data_series_uct)
+
 	chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_hist_jct)
 
 	pie_chart_tj = format_embedded_pie_chart(label_tj, data_group_tj, [ '17%', '50%' ])
@@ -107,16 +112,18 @@ def monitor(request, farm_id):
 	chart_jp = format_dist_plot(farm_id, 'jp', label_jp, data=scatter_pie_all_data)
 	chart_js = format_pie_chart(farm_id, 'js', 'Jobs summary', data=embedded_pie_all)
 
-	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct, chart_js]
+	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct, chart_uct, chart_js]
 
 	return render(request, 'batch_monitor/monitor.html', d)
 
 # tools
 def prepare_data(farm):
 	data_list_ts = []
+
 	data_series_tj = []
 	data_series_rj = []
 	data_series_fs = []
+	data_series_uct = []
 
 	data_hist_jct = []
 	data_dist_jp = []
@@ -149,14 +156,17 @@ def prepare_data(farm):
 			_n_rj = val.q_njobsR[len(val.q_njobsR)-1]
 			_n_qj = val.q_njobsQ[len(val.q_njobsQ)-1]
 
-			_lfs = [list(a) for a in zip(data_list_ts[-len(val.q_njobsT):], list(val.q_fairshare))]
+			_lfs = [list(a) for a in zip(data_list_ts[-len(val.q_fairshare):], list(val.q_fairshare))]
 			_ljp = list(val.l_jobprogress)
-			
-			_ljct = histogramize(val.q_calctime, 24, 0, 120)
+
+			_ljct = histogramize(val.q_jcalctime, 24, 0, 120)
+			_luct = [list(a) for a in zip(data_list_ts[-len(val.q_ucalctime):], list(val.q_ucalctime))]
 
 			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_uct.append({ 'name' : val.name, 'data': _luct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+
 			data_dist_jp.append({ 'name' : val.name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
 			if _n_tj > 0:
@@ -181,6 +191,7 @@ def prepare_data(farm):
 	cache.set('data_trend_tj', data_series_tj)
 	cache.set('data_trend_rj', data_series_rj)
 	cache.set('data_trend_fs', data_series_fs)
+	cache.set('data_trend_uct', data_series_uct)
 	cache.set('data_hist_jct', data_hist_jct)
 	cache.set('data_dist_jp', data_dist_jp)
 	cache.set('data_pie_tj', data_group_tj)

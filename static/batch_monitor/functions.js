@@ -1,6 +1,6 @@
 // find all keys with given value in object
 
-var update_period_ms = 60000;
+var update_period_ms = 6000;
 
 function getObjects(obj, key, val) {
 	var objects = [];

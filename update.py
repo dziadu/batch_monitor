@@ -141,7 +141,7 @@ def validate_jobs_list(jobs_list, users_list):
 		_user = users_list[_name]
 
 		if jobs_list[i].is_done():
-			_user.q_calctime.append(jobs_list[i].calc_time())
+			_user.q_jcalctime.append(jobs_list[i].calc_time())
 
 		elif jobs_list[i].is_queued():
 			_user.njobsQ += 1
@@ -149,6 +149,7 @@ def validate_jobs_list(jobs_list, users_list):
 			total_queued += 1
 
 		elif jobs_list[i].is_running():
+			_user.nuserCT += jobs_list[i].calc_time_s()
 			_user.njobsR += 1
 			_user.njobsT += 1
 			total_run += 1

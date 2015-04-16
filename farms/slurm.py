@@ -38,9 +38,12 @@ class Slurm(FarmEngine):
 					if len(words) == 0:
 						continue
 
+					_farm		= words[2]
+					if _famrn != "farmq":
+						continue
+
 					_jid		= words[0]
 					_user		= words[1]
-					_farm		= words[2]
 					_reqtime	= words[3]
 					_status		= words[4]
 					_elatime	= words[5]

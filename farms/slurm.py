@@ -39,7 +39,7 @@ class Slurm(FarmEngine):
 						continue
 
 					_farm		= words[2]
-					if _famrn != "farmq":
+					if _farm != "farmq":
 						continue
 
 					_jid		= words[0]

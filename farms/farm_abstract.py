@@ -118,6 +118,7 @@ class JobData():
 	def update_status(self, job):
 		self.status = job.status
 		self.ela_time = job.ela_time
+		self.priority = job.priority
 
 	def __str__(self):
 		return "JID: {:d} NAME: {:s} FARM: {:s} REQ: {:d} STA: {:d} ELA: {:d}".format(self.jid, self.name, self.farm, self.req_time, self.status, self.ela_time)

@@ -86,7 +86,7 @@ class JobData():
 		self.priority = priority
 
 	def requested(self):
-		return self.req_time/60
+		return self.req_time/60.
 
 	def progress(self):
 		if (self.req_time):
@@ -95,7 +95,7 @@ class JobData():
 			return 1.1
 
 	def calc_time(self):
-		return self.ela_time/60
+		return self.ela_time/60.
 
 	def calc_time_s(self):
 		return self.ela_time

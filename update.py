@@ -150,7 +150,7 @@ def validate_jobs_list(jobs_list, users_list):
 			total_queued += 1
 
 		elif jobs_list[i].is_running():
-			_user.nuserCT += jobs_list[i].calc_time_s()
+			_user.nuserCT += jobs_list[i].calc_time()
 			_user.njobsR += 1
 			_user.njobsT += 1
 			_user.fairshare += jobs_list[i].priority

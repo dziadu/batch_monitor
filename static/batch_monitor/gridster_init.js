@@ -10,7 +10,7 @@ function reflow_chart(elem) {
 	for (var c = 0; c < child_nodes_len; ++c)
 	{
 		if (elem.children[c].hasAttribute('data-highcharts-chart')) {
-			console.log('Reflowing ' + '#'+elem.children[c].id);
+// 			console.log('Reflowing ' + '#'+elem.children[c].id);
 			$('#'+elem.children[c].id).highcharts()._reflow();
 		}
 	}
@@ -24,8 +24,8 @@ function calc_grid_size_h() {
 	padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
 	border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
 
-	console.log(width, margin, padding, border, width - margin - padding - border)
-// 	var el_width = $(".gridster ul").width();
+// 	console.log(width, margin, padding, border, width - margin - padding - border)
+	// 	var el_width = $(".gridster ul").width();
 	var el_width = width - margin - padding - border;
 	return el_width/grid_div_h - 2 * mar_h;	// FIXME Why 1 not 2?
 }
@@ -38,8 +38,8 @@ function calc_grid_size_v() {
 	padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
 	border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
 
-	console.log(height, margin, padding, border, height - margin - padding - border)
-// 	var el_width = $(".gridster ul").width();
+// 	console.log(height, margin, padding, border, height - margin - padding - border)
+	// 	var el_width = $(".gridster ul").width();
 	var el_height = height - margin - padding - border;
 	return el_height/grid_div_v - 2 * mar_v;	// FIXME Why 1 not 2?
 }
@@ -51,7 +51,7 @@ function resize_chart(elem, w, h) {
 	{
 		if (elem.children[c].hasAttribute('data-highcharts-chart')) {
 			console.log('Resizing ' + '#'+elem.children[c].id);
-			$('#'+elem.children[c].id).highcharts().setSize(w, h, false);   
+			$('#'+elem.children[c].id).highcharts().setSize(w, h, false);
 			$('#'+elem.children[c].id).highcharts().redraw();
 		}
 	}
@@ -61,7 +61,7 @@ function recal_size() {
 	console.log("*** resizing ***");
 	var gridster = $(".gridster ul").gridster().data('gridster');
 	gridster.options.widget_base_dimensions = [calc_grid_size_h(), calc_grid_size_v()];
-// 
+//
 // // 		console.log("Updating grid");
 // // 		$(".gridster ul").gridster({
 // // 			widget_base_dimensions: [grid_size_h, grid_size_v],
@@ -121,7 +121,7 @@ $(window).ready(function () {
 		});
 	}
 // })
-// 
+//
 // $(function() {
 	console.log("*** initializing gridster ***");
 	gridster = $(".gridster ul").gridster({

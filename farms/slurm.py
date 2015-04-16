@@ -6,7 +6,7 @@ g_user_total = None
 class Slurm(FarmEngine):
 	def __init__(self, remote):
 		super(Slurm, self).__init__(remote)
-		self.cmd = "squeue -S i -o \\\"%A %u %P %l %T %M\\\""
+		self.cmd = "squeue -S i -o \\\"%A %u %P %l %T %M %p\\\""
 
 	def parse(self):
 		if self.data is None:
@@ -44,13 +44,15 @@ class Slurm(FarmEngine):
 					_reqtime	= words[3]
 					_status		= words[4]
 					_elatime	= words[5]
+					_priority	= float(words[6])
 
 					jid = int(_jid)
 
 					jd = JobData(jid, _user, _farm,
 						self.status_decode(_status),
 						self.strtime2secs(_reqtime),
-						self.strtime2secs(_elatime))
+						self.strtime2secs(_elatime),
+						_priority)
 					jobs_list.append(jd)
 
 		return jobs_list

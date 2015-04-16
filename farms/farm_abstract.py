@@ -36,7 +36,7 @@ class UserData():
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
-		self.fairshare = 100.0
+		self.fairshare = 0.0
 		self.nuserCT = 0
 
 	def clear(self):
@@ -44,18 +44,21 @@ class UserData():
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
-		#self.fairshare = 100.0
+		self.fairshare = 0.0
 		self.nuserCT = 0
 		del self.l_jobprogress[:]
 
-	def fill(self):
+	def fill(self, fs_normalisation=1.):
 		self.njobsT = self.njobsR + self.njobsH + self.njobsQ
 
 		self.q_njobsT.append(self.njobsT)
 		self.q_njobsR.append(self.njobsR)
 		self.q_njobsH.append(self.njobsH)
 		self.q_njobsQ.append(self.njobsQ)
-		self.q_fairshare.append(self.fairshare)
+		if fs_normalisation > 0.:
+			self.q_fairshare.append(self.fairshare/fs_normalisation * 100.)
+		else:
+			self.q_fairshare.append(100.0)
 		self.q_ucalctime.append(self.nuserCT)
 
 		#if self.njobsT > 0:
@@ -72,7 +75,7 @@ class UserData():
 				self.viscnt -= 1
 
 class JobData():
-	def __init__(self, jid, name, farm, status, req_time, ela_time):
+	def __init__(self, jid, name, farm, status, req_time, ela_time, priority=0):
 		self.jid = jid
 		self.name = name
 		self.farm = farm
@@ -80,6 +83,7 @@ class JobData():
 		self.ela_time = ela_time
 		# 0 - queued, 1 - run, 2 - hold, 3 - finished
 		self.status = status
+		self.priority = priority
 
 	def requested(self):
 		return self.req_time/60

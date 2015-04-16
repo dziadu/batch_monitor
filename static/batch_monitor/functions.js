@@ -239,6 +239,7 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 	}
 
 	f();
+	sub_pie_chart_updater(chart);
 
 	chart._reflow = function() {
 		chart.reflow();
@@ -252,13 +253,52 @@ function pie_chart_updater(farm, chart, chart_data_type) {
 }
 
 function sub_pie_chart_updater(chart) {
-	render_label(chart, 'rl_tj', 'Total jobs', 0.17, 0.10)
-	render_label(chart, 'rl_rj', 'Running jobs', 0.50, 0.10)
-	render_label(chart, 'rl_qj', 'Queued jobs', 0.83, 0.10)
+	label1_x = 0.17
+	label2_x = 0.50
+	label3_x = 0.83
 
-	sub_pie_pos(chart, chart.series[0], 0.17, '50%');
-	sub_pie_pos(chart, chart.series[1], 0.50, '50%');
-	sub_pie_pos(chart, chart.series[2], 0.83, '50%');
+	label1_y = 0.08
+	label2_y = 0.08
+	label3_y = 0.08
+
+	chart1_x = 0.17
+	chart2_x = 0.50
+	chart3_x = 0.83
+
+	chart1_y = 0.28
+	chart2_y = 0.28
+	chart3_y = 0.28
+
+	var element = document.getElementById(chart.renderTo.id);
+	var style = element.currentStyle || window.getComputedStyle(element);
+	width = parseFloat(style.width);
+	height = parseFloat(style.height);
+
+	if (height > width) {
+		label1_x = 0.50
+		label2_x = 0.50
+		label3_x = 0.50
+
+		label1_y = 0.10
+		label2_y = 0.43
+		label3_y = 0.76
+
+		chart1_x = 0.50
+		chart2_x = 0.50
+		chart3_x = 0.50
+
+		chart1_y = 0.17
+		chart2_y = 0.50
+		chart3_y = 0.83
+	}
+
+	render_label(chart, 'rl_tj', 'Total jobs', label1_x, label1_y)
+	render_label(chart, 'rl_rj', 'Running jobs', label2_x, label2_y)
+	render_label(chart, 'rl_qj', 'Queued jobs', label3_x, label3_y)
+
+	sub_pie_pos(chart, chart.series[0], chart1_x, chart1_y);
+	sub_pie_pos(chart, chart.series[1], chart2_x, chart2_y);
+	sub_pie_pos(chart, chart.series[2], chart3_x, chart3_y);
 // 	chart.series[0].update({
 // 		center: [ chart.plotLeft + (0.17 * (chart.plotWidth-60)), '50%' ],
 // 	});
@@ -269,7 +309,6 @@ function sub_pie_chart_updater(chart) {
 // 		center: [ chart.plotLeft + (0.83 * (chart.plotWidth-60)), '50%' ],
 // 	});
 }
-
 
 function render_label(chart, label_id, text, center_x, center_y) {
 	elem = document.getElementById(label_id)
@@ -285,7 +324,6 @@ function render_label(chart, label_id, text, center_x, center_y) {
 				r: 5,
 				zIndex: 6,
 			})
-		console.log(elem);
 		elem.add();
 
 		box = elem.getBBox();
@@ -296,14 +334,16 @@ function render_label(chart, label_id, text, center_x, center_y) {
 	} else {
 		var new_x = chart.plotLeft + (center_x * (chart.plotWidth-60)) - (0.5 * box.width) + 30;
 		var new_y = chart.plotTop + (center_y * chart.plotHeight) - (0.5 * box.height);
-		console.log(new_x);
 		elem.setAttribute('transform', "translate\(" + new_x + "," + new_y + ")");
 	}
 }
 
 function sub_pie_pos(chart, series, x, y) {
 	series.update({
-		center: [ chart.plotLeft + (x * (chart.plotWidth-60)), y ],
+		center: [
+			chart.plotLeft + (x * (chart.plotWidth-60)),
+			chart.plotTop + (y * chart.plotHeight),
+		],
 	});
 }
 

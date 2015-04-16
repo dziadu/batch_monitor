@@ -131,6 +131,7 @@ def validate_jobs_list(jobs_list, users_list):
 	total_run = 0
 	total_queued = 0
 	total_hold = 0
+	total_fs = 0.
 
 	for u in users_list:
 		users_list[u].clear()
@@ -152,7 +153,9 @@ def validate_jobs_list(jobs_list, users_list):
 			_user.nuserCT += jobs_list[i].calc_time_s()
 			_user.njobsR += 1
 			_user.njobsT += 1
+			_user.fairshare += jobs_list[i].priority
 			total_run += 1
+			total_fs += jobs_list[i].priority
 
 			if jobs_list[i].farm[0:5] == "farmq":
 				_user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
@@ -169,7 +172,7 @@ def validate_jobs_list(jobs_list, users_list):
 	user_total.njobsT = total_run + total_queued + total_hold
 
 	for u in users_list:
-		users_list[u].fill()
+		users_list[u].fill(total_fs)
 
 def cleanup_jobs_list(jobs_list, users_list):
 	jobs_len = len(jobs_list)

@@ -92,9 +92,9 @@ class JobData():
 
 	def progress(self):
 		if (self.req_time):
-			return float(self.ela_time)/self.req_time
+			return 100. * float(self.ela_time)/self.req_time
 		else:
-			return 1.1
+			return 101.
 
 	def calc_time(self):
 		return self.ela_time/60

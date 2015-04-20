@@ -78,10 +78,10 @@ class Slurm(FarmEngine):
 		time = only_time.split(":")
 		_len = len(time)
 
-		total_time = int(time[_len-1])
+		total_time = 0
 
-		for i in xrange(_len-2,-1,-1):
-			total_time += int(time[i]) * 60
+		for i in xrange(_len-1,-1,-1):
+			total_time += int(time[i]) * 60**(_len - 1 - i)
 
 		return only_days + total_time
 

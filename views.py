@@ -298,7 +298,7 @@ def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested ti
 		'yAxis': {
 			'title': { 'text': ylabel},
 			'floor': 0,
-			'ceiling': 1,
+			'ceiling': 105,
 		},
 		'series': data,
 		'plotOptions': {
@@ -372,12 +372,12 @@ def histogramize(data, bins, bmin, bmax):
 	histo = [None] * bins
 
 	for i in xrange(bins):
-		histo[i] = [ bmin + i*tick + tick/2, 0 ]
+		histo[i] = [ bmin + i*tick + tick/2, None ]
 
 	for i in xrange(len(data)):
 		val = float(data[i])
 		_bin = int( (val - bmin) / tick )
 		if _bin >= 0 and _bin < bins:
-			histo[_bin][1] += 1
+			histo[_bin][1] = int(histo[_bin][1] or 0) + 1
 
 	return histo

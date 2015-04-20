@@ -174,7 +174,8 @@ def validate_jobs_list(jobs_list, users_list):
 	user_total.njobsT = total_run + total_queued + total_hold
 
 	for u in users_list:
-		total_fs += users_list[u].fairshare
+		if users_list[u].fairshare is not None:
+			total_fs += users_list[u].fairshare
 
 	for u in users_list:
 		users_list[u].fill(total_fs)

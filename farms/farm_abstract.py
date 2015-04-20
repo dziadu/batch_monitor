@@ -36,7 +36,7 @@ class UserData():
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
-		self.fairshare = 0.0
+		self.fairshare = None
 		self.nuserCT = 0
 
 	def clear(self):
@@ -44,7 +44,7 @@ class UserData():
 		self.njobsR = 0
 		self.njobsH = 0
 		self.njobsQ = 0
-		self.fairshare = 0.0
+		self.fairshare = None
 		self.nuserCT = 0
 		del self.l_jobprogress[:]
 
@@ -55,10 +55,12 @@ class UserData():
 		self.q_njobsR.append(self.njobsR)
 		self.q_njobsH.append(self.njobsH)
 		self.q_njobsQ.append(self.njobsQ)
-		if fs_normalisation > 0.:
+
+		if fs_normalisation > 0. and self.fairshare is not None:
 			self.q_fairshare.append(self.fairshare/fs_normalisation * 100.)
 		else:
-			self.q_fairshare.append(100.0)
+			self.q_fairshare.append(None)
+
 		self.q_ucalctime.append(self.nuserCT)
 
 		#if self.njobsT > 0:

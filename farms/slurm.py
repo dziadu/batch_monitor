@@ -6,7 +6,7 @@ g_user_total = None
 class Slurm(FarmEngine):
 	def __init__(self, remote):
 		super(Slurm, self).__init__(remote)
-		self.cmd = "squeue -S i -o \\\"%A %u %P %l %T %M %p\\\""
+		self.cmd = "squeue -S i -o \"%A %u %P %l %T %M %p\""
 
 	def parse(self):
 		if self.data is None:
@@ -39,7 +39,7 @@ class Slurm(FarmEngine):
 						continue
 
 					_farm		= words[2]
-					if _farm != "farmq":
+					if _farm != "kta":
 						continue
 
 					_jid		= words[0]

@@ -180,7 +180,11 @@ class FarmEngine(object):
 		self.cmd = None
 
 	def fetch(self):
-		remote_cmd = "{:s} {:s}".format(self.remote, self.cmd)
+		if self.remote is None:
+			remote_cmd = "{:s}".format(self.cmd)
+		else:
+			remote_cmd = "{:s} {:s}".format(self.remote, self.cmd)
+
 		command = Command("farm command", remote_cmd)
 		command.run()
 		co, ce, ter, errno = command.check(timeout=2)

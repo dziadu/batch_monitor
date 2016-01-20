@@ -239,8 +239,9 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 				'hour' : '%H:%M',
 				'day' : '%e. %b', }, },
 		'yAxis': {
-			'title': { 'text': ylabel },
 			'floor': 0,
+			'ceiling' : 130,
+			'title': { 'text': ylabel },
 			},
 		'series': series_data,
 		}

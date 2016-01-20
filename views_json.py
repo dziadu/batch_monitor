@@ -15,9 +15,9 @@ def jsonreq(request, farm_id, data_type):
 
 	g_ts = cache.get("time_stamp", None)
 
-	if 'lastts' in request.REQUEST:
+	if 'lastts' in request.GET:
 		try:
-			last_ts = int(request.REQUEST['lastts'])
+			last_ts = int(request.GET['lastts'])
 		except ValueError:
 			last_ts = 0
 	else:

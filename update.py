@@ -159,7 +159,7 @@ def validate_jobs_list(jobs_list, users_list):
 			total_run += 1
 			#total_fs += jobs_list[i].priority
 
-			if jobs_list[i].farm[0:5] == "farmq":
+			if jobs_list[i].farm[0:3] == "kta":
 				_user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
 
 		elif jobs_list[i].is_hold():

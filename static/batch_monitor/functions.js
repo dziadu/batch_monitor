@@ -16,7 +16,7 @@ function getObjects(obj, key, val) {
 }
 
 // configure periodical update of the time chart
-function time_chart_updater(farm, chart, chart_data_type) {
+function time_chart_updater(subpath, chart, chart_data_type) {
 	var f = function() {
 		if (chart.series.length) {
 			var keys = chart.series[0].xData;
@@ -26,7 +26,7 @@ function time_chart_updater(farm, chart, chart_data_type) {
 		else
 			lastts=null
 
-		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
+		$.getJSON(subpath+'json/'+chart_data_type+'/?lastts='+lastts+'&callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -82,9 +82,9 @@ function time_chart_updater(farm, chart, chart_data_type) {
 }
 
 // configure periodical update of the hist chart
-function hist_chart_updater(farm, chart, chart_data_type) {
+function hist_chart_updater(subpath, chart, chart_data_type) {
 	var f = function() {
-		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
+		$.getJSON(subpath+'json/'+chart_data_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -137,9 +137,9 @@ function hist_chart_updater(farm, chart, chart_data_type) {
 }
 
 // configure periodical update of the scatter+pie charts
-function scatter_chart_updater(farm, chart, chart_data_type) {
+function scatter_chart_updater(subpath, chart, chart_data_type) {
 	var f = function() {
-		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
+		$.getJSON(subpath+'json/'+chart_data_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 
@@ -210,9 +210,9 @@ function scatter_chart_updater(farm, chart, chart_data_type) {
 }
 
 // configure periodical update of the scatter+pie charts
-function pie_chart_updater(farm, chart, chart_data_type) {
+function pie_chart_updater(subpath, chart, chart_data_type) {
 	var f = function() {
-		$.getJSON('/monitor/'+farm+'/json/'+chart_data_type+'/?callback=?', function(jsondata) {
+		$.getJSON(subpath+'json/'+chart_data_type+'/?callback=?', function(jsondata) {
 			if (jsondata == null)
 				return
 

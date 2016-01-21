@@ -2,13 +2,20 @@
 
 from django.core.cache import cache
 from django.conf import settings
+from django.core.urlresolvers import get_script_prefix
+from django.core.urlresolvers import *
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 
 from django.views import generic
 
+from django.contrib.staticfiles.templatetags.staticfiles import static
+
+import os
+
 from batch_monitor.models import BatchHostSettings
+import batch_monitor
 
 import json
 import batch_monitor.update
@@ -222,7 +229,7 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
-					" time_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
+					" time_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$",
 				}
 			},
@@ -240,7 +247,6 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 				'day' : '%e. %b', }, },
 		'yAxis': {
 			'floor': 0,
-			'ceiling' : 130,
 			'title': { 'text': ylabel },
 			},
 		'series': series_data,
@@ -255,7 +261,7 @@ def format_hist_plot(farm, chart_data_type, title, series_data, xlabel='Time [mi
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
-					" hist_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
+					" hist_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$"
 					, } },
 		'title': {
@@ -282,7 +288,7 @@ def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested ti
 			'events': {
 				'load':
 					"$@#function() {"
-					" scatter_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
+					" scatter_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$"
 			},
 		},
@@ -298,8 +304,11 @@ def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested ti
 		},
 		'yAxis': {
 			'title': { 'text': ylabel},
-			'floor': 0,
-			'ceiling': 105,
+			'min' : 0,
+			'max': 105,
+			'alignTicks' : False,
+			'allowDecimals' : False,
+			'tickInterval' : 10,
 		},
 		'series': data,
 		'plotOptions': {
@@ -326,7 +335,7 @@ def format_pie_chart(farm, chart_data_type, title, data=[]):
 			'events': {
 				'load':
 					"$@#function() {"
-					" pie_chart_updater(" + farm + ", this, '" + chart_data_type + "');"
+					" pie_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$",
 			}
 		},

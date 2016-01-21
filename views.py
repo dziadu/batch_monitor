@@ -231,8 +231,7 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 				'load': "$@#function() {"
 					" time_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$",
-				}
-			},
+				} },
 		'title': {
 			'text': title },
 		'subtitle': {
@@ -247,8 +246,7 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 				'day' : '%e. %b', }, },
 		'yAxis': {
 			'floor': 0,
-			'title': { 'text': ylabel },
-			},
+			'title': { 'text': ylabel }, },
 		'series': series_data,
 		}
 
@@ -301,6 +299,7 @@ def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested ti
 		'xAxis': {
 			'allowDecimals' : 'false',
 			'title': { 'text': xlabel},
+			'tickInterval' : 20,
 		},
 		'yAxis': {
 			'title': { 'text': ylabel},

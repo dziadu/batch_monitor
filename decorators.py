@@ -19,8 +19,10 @@ def json_response(func):
 			if 'callback' in request.GET:
 				# a jsonp response!
 				data = '%s(%s);' % (request.GET['callback'], data)
+				#return JsonResponse(data)
 				return HttpResponse(data, "text/javascript")
 		except:
 			data = simplejson.dumps(str(objects))
+
 		return HttpResponse(data, "application/json")
 	return decorator

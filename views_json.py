@@ -102,4 +102,4 @@ def jsonreq(request, farm_id, data_type):
 
 			#return { 'limit': g_ts.colsize, 'result': _response_data }
 
-	return JsonResponse({ 'limit': g_ts.colsize, 'result': _response_data })
+	return { 'limit': g_ts.colsize, 'result': _response_data }

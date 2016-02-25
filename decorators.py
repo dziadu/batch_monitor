@@ -16,11 +16,13 @@ def json_response(func):
 			return objects
 		try:
 			data = simplejson.dumps(objects)
-			if 'callback' in request.REQUEST:
+			if 'callback' in request.GET:
 				# a jsonp response!
-				data = '%s(%s);' % (request.REQUEST['callback'], data)
+				data = '%s(%s);' % (request.GET['callback'], data)
+				#return JsonResponse(data)
 				return HttpResponse(data, "text/javascript")
 		except:
 			data = simplejson.dumps(str(objects))
+
 		return HttpResponse(data, "application/json")
 	return decorator

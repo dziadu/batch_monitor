@@ -2,6 +2,7 @@ from django.core.cache import cache
 from batch_monitor.models import BatchHostSettings
 from decorators import json_response
 from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
 #import json
 import simplejson as json
 
@@ -102,5 +103,3 @@ def jsonreq(request, farm_id, data_type):
 			#return { 'limit': g_ts.colsize, 'result': _response_data }
 
 	return { 'limit': g_ts.colsize, 'result': _response_data }
-	#return { 'limit': g_ts.colsize, 'result': response_data }
-	#return None

@@ -17,6 +17,8 @@ from chartit import DataPool, Chart
 
 from datetime import datetime
 
+from batch_monitor.conf import config as bmconfig
+
 label_tj = 'Total jobs'
 label_rj = 'Running jobs'
 label_qj = 'Queued jobs'
@@ -162,21 +164,26 @@ def prepare_data(farm):
 			_ljct = histogramize(val.q_jcalctime, 24, 0, 120)
 			_luct = [list(a) for a in zip(data_list_ts[-len(val.q_ucalctime):], list(val.q_ucalctime))]
 
-			data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-			data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-			data_series_fs.append({ 'name' : val.name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-			data_series_uct.append({ 'name' : val.name, 'data': _luct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			user_name = val.name
+			if bmconfig.user_map is not None:
+				if user_name in bmconfig.user_map:
+					user_name = bmconfig.user_map[user_name]
 
-			data_dist_jp.append({ 'name' : val.name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_tj.append({ 'name' : user_name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_rj.append({ 'name' : user_name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_fs.append({ 'name' : user_name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_series_uct.append({ 'name' : user_name, 'data': _luct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+
+			data_dist_jp.append({ 'name' : user_name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
 			if _n_tj > 0:
-				data_group_tj.append({ 'name' : val.name, 'y': _n_tj, '_color': col_idx })
+				data_group_tj.append({ 'name' : user_name, 'y': _n_tj, '_color': col_idx })
 			if _n_rj > 0:
-				data_group_rj.append({ 'name' : val.name, 'y': _n_rj, '_color': col_idx })
+				data_group_rj.append({ 'name' : user_name, 'y': _n_rj, '_color': col_idx })
 			if _n_qj > 0:
-				data_group_qj.append({ 'name' : val.name, 'y': _n_qj, '_color': col_idx })
+				data_group_qj.append({ 'name' : user_name, 'y': _n_qj, '_color': col_idx })
 
-			data_hist_jct.append({ 'name' : val.name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+			data_hist_jct.append({ 'name' : user_name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
 
 		val = g_users['ALL']
@@ -185,8 +192,8 @@ def prepare_data(farm):
 		_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
 		_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-		data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
-		data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_tj.append({ 'name' : user_name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_rj.append({ 'name' : user_name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
 	cache.set('data_trend_tj', data_series_tj)
 	cache.set('data_trend_rj', data_series_rj)

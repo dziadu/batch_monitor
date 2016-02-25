@@ -199,8 +199,8 @@ def prepare_data(farm):
 		_ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
 		_lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-		data_series_tj.append({ 'name' : user_name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
-		data_series_rj.append({ 'name' : user_name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+		data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
 	cache.set('data_trend_tj', data_series_tj)
 	cache.set('data_trend_rj', data_series_rj)

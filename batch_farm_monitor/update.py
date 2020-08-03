@@ -3,7 +3,7 @@ from batch_farm_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
 import datetime, time
 import collections
-import threading, subprocess, subprocess32
+import threading, subprocess
 import importlib, inspect
 
 from django.core.cache import cache
@@ -54,7 +54,7 @@ def parse_data(fs_obj, farm_obj, jobs_list, users_list):
 
 	if fs_obj:
 		_users = fs_obj.parse()
-		for u in xrange(len(_users)):
+		for u in range(len(_users)):
 			_u = _users[u]
 			if _u.name not in users_list:
 				print("Adding user " + _uname)
@@ -78,7 +78,7 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
 	last_jobs_len = len(last_jobs)
 
 	if not last_jobs_len:
-		for i in xrange(job_list_len):
+		for i in range(job_list_len):
 			jobs_list[i].mark_done()
 		return
 
@@ -137,7 +137,7 @@ def validate_jobs_list(jobs_list, users_list):
 		users_list[u].clear()
 
 	""" adding finished jobs to queue of calculation time """
-	for i in xrange(jobs_len):
+	for i in range(jobs_len):
 		_name = jobs_list[i].name
 		_user = users_list[_name]
 
@@ -189,7 +189,7 @@ def cleanup_jobs_list(jobs_list, users_list):
 	rm_queue_sta = -1
 	rm_queue = False
 
-	for i in xrange(jobs_len-1, -1, -1):
+	for i in range(jobs_len-1, -1, -1):
 		if jobs_list[i].is_done():
 			if rm_queue_sta == -1:
 				rm_queue_sta = i

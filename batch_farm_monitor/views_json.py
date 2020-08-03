@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from batch_farm_monitor.models import BatchHostSettings
-from decorators import json_response
+from batch_farm_monitor.decorators import json_response
 from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
 #import json

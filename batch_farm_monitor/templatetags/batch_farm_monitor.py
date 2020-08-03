@@ -1,5 +1,3 @@
-from itertools import izip_longest
-
 from django import template
 import json
 import simplejson
@@ -80,7 +78,7 @@ def show_charts(chart_list=None, render_to=''):
 
 	if chart_list is not None:
 		render_to_list = [s.strip() for s in render_to.split(',')]
-		for hco, render_to in izip_longest(chart_list, render_to_list):
+		for hco, render_to in zip(chart_list, render_to_list):
 			jsdump = js_call_extractor(json.dumps(hco))
 
 			embed_script += tpl_embed_script % (render_to, jsdump )

@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 {% load batch_farm_monitor %}
 <!doctype html>
 <html>
@@ -76,7 +76,7 @@
 
 </section>
 
-<script src="{% static 'batch_farm_monitor/gridster/dist/jquery.gridster.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'batch_farm_monitor/gridster/dist/jquery.dsmorse-gridster.js' %}" type="text/javascript" charset="utf-8"></script>
 <script src="{% static 'batch_farm_monitor/gridster_init.js' %}" type="text/javascript" charset="utf-8"></script>
 
 {{ charts|show_charts:"container_tj,container_rj,container_fs,container_jp,container_jct,container_uct,container_js" }}

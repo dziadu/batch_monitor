@@ -2,15 +2,14 @@
 
 from django.core.cache import cache
 from django.conf import settings
-from django.core.urlresolvers import get_script_prefix
-from django.core.urlresolvers import *
+from django.urls import *
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 
 from django.views import generic
 
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 
 import os
 
@@ -212,15 +211,15 @@ def prepare_data(farm):
 	cache.set('data_pie_rj', data_group_rj)
 	cache.set('data_pie_qj', data_group_qj)
 
-	for i in xrange(len(data_group_tj)):
+	for i in range(len(data_group_tj)):
 		_c = data_group_tj[i]['_color']
 		data_group_tj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-	for i in xrange(len(data_group_rj)):
+	for i in range(len(data_group_rj)):
 		_c = data_group_rj[i]['_color']
 		data_group_rj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-	for i in xrange(len(data_group_qj)):
+	for i in range(len(data_group_qj)):
 		_c = data_group_qj[i]['_color']
 		data_group_qj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
@@ -387,10 +386,10 @@ def histogramize(data, bins, bmin, bmax):
 	tick = float(bmax - bmin)/bins
 	histo = [None] * bins
 
-	for i in xrange(bins):
+	for i in range(bins):
 		histo[i] = [ bmin + i*tick + tick/2, None ]
 
-	for i in xrange(len(data)):
+	for i in range(len(data)):
 		val = float(data[i])
 		_bin = int( (val - bmin) / tick )
 		if _bin >= 0 and _bin < bins:

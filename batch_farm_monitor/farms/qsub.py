@@ -1,5 +1,5 @@
-from batch_monitor.models import JobData
-from batch_monitor.farms.farm_abstract import Command, FarmEngine
+from batch_farm_monitor.models import JobData
+from batch_farm_monitor.farms.farm_abstract import Command, FarmEngine
 
 class Qsub(FarmEngine):
 	def __init__(self, remote):

@@ -1,4 +1,4 @@
-from batch_monitor.farms.farm_abstract import Command, UserData, FairShareEngine
+from batch_farm_monitor.farms.farm_abstract import Command, UserData, FairShareEngine
 
 class Diagnose(FairShareEngine):
 	def __init__(self, remote):

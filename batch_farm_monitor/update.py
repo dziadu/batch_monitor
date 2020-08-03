@@ -1,5 +1,5 @@
-from batch_monitor.models import BatchHostSettings
-from batch_monitor.farms.farm_abstract import UserData, JobData, TimeData
+from batch_farm_monitor.models import BatchHostSettings
+from batch_farm_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
 import datetime, time
 import collections
@@ -13,7 +13,7 @@ def import_modules(remote, fsengine, farmengine):
 	farm_obj = None
 
 	if fsengine is not None:
-		modname = "batch_monitor.farms."+fsengine
+		modname = "batch_farm_monitor.farms."+fsengine
 		module = importlib.import_module(modname)
 		clsmembers = inspect.getmembers(module, inspect.isclass)
 		for m in clsmembers:
@@ -22,7 +22,7 @@ def import_modules(remote, fsengine, farmengine):
 				fs_obj = fs_class(remote)
 
 	if farmengine is not None:
-		modname = "batch_monitor.farms."+farmengine
+		modname = "batch_farm_monitor.farms."+farmengine
 		module = importlib.import_module(modname)
 		clsmembers = inspect.getmembers(module, inspect.isclass)
 		for m in clsmembers:

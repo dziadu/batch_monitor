@@ -1,4 +1,4 @@
-from batch_monitor.farms.farm_abstract import Command, JobData, FarmEngine
+from batch_farm_monitor.farms.farm_abstract import Command, JobData, FarmEngine
 
 g_users = None
 g_user_total = None

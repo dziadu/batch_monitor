@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-from batch_monitor import views, views_json
+from batch_farm_monitor import views, views_json
 
 urlpatterns = [
 	url(r'^$', views.IndexView.as_view(), name='index'),

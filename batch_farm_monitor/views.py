@@ -14,17 +14,17 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 
 import os
 
-from batch_monitor.models import BatchHostSettings
-import batch_monitor
+from batch_farm_monitor.models import BatchHostSettings
+import batch_farm_monitor
 
 import json
-import batch_monitor.update
+import batch_farm_monitor.update
 
 from chartit import DataPool, Chart
 
 from datetime import datetime
 
-from batch_monitor.conf import config as bmconfig
+from batch_farm_monitor.conf import config as bmconfig
 
 label_tj = 'Total jobs'
 label_rj = 'Running jobs'
@@ -36,7 +36,7 @@ label_jct = 'Jobs computing time'
 label_uct = 'Users computing time'
 
 class IndexView(generic.ListView):
-	template_name = 'batch_monitor/index.html'
+	template_name = 'batch_farm_monitor/index.html'
 	context_object_name = 'farms_list'
 	#model = BatchHostSettings
 
@@ -56,18 +56,18 @@ def update(request, farm_id):
 
 	#if lock:
 		#d['res'] = 1
-		#return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
+		#return HttpResponseForbidden(render(request, 'batch_farm_monitor/update.html', d))
 
 	#lock = True
 	#cache.set("lock", lock)
 
-	if batch_monitor.update.parse_farm(farm):
+	if batch_farm_monitor.update.parse_farm(farm):
 		prepare_data(farm_id)
 	else:
 		d['res'] = 2
-		return HttpResponseForbidden(render(request, 'batch_monitor/update.html', d))
+		return HttpResponseForbidden(render(request, 'batch_farm_monitor/update.html', d))
 
-	rnd = render(request, 'batch_monitor/update.html', d)
+	rnd = render(request, 'batch_farm_monitor/update.html', d)
 
 	#lock = False
 	#cache.set("lock", lock)
@@ -123,7 +123,7 @@ def monitor(request, farm_id):
 
 	d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct, chart_uct, chart_js]
 
-	return render(request, 'batch_monitor/monitor.html', d)
+	return render(request, 'batch_farm_monitor/monitor.html', d)
 
 # tools
 def prepare_data(farm):
@@ -236,7 +236,7 @@ def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', 
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
-					" time_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
+					" time_chart_updater('" + reverse('batch_farm_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$",
 				} },
 		'title': {
@@ -266,7 +266,7 @@ def format_hist_plot(farm, chart_data_type, title, series_data, xlabel='Time [mi
 			'zoomType': 'x',
 			'events': {
 				'load': "$@#function() {"
-					" hist_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
+					" hist_chart_updater('" + reverse('batch_farm_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$"
 					, } },
 		'title': {
@@ -293,7 +293,7 @@ def format_dist_plot(farm, chart_data_type, title, data=[], xlabel='Requested ti
 			'events': {
 				'load':
 					"$@#function() {"
-					" scatter_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
+					" scatter_chart_updater('" + reverse('batch_farm_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$"
 			},
 		},
@@ -341,7 +341,7 @@ def format_pie_chart(farm, chart_data_type, title, data=[]):
 			'events': {
 				'load':
 					"$@#function() {"
-					" pie_chart_updater('" + reverse('batch_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
+					" pie_chart_updater('" + reverse('batch_farm_monitor:monitor', args=(farm,)) + "', this, '" + chart_data_type + "');"
 					" }#@$",
 			}
 		},

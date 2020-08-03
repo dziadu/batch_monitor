@@ -9,8 +9,8 @@ from django.test import TestCase
 
 import collections
 import update
-#from batch_monitor.models import UserData, JobData, TimeData
-from batch_monitor.farms.farm_abstract import UserData, JobData, TimeData
+#from batch_farm_monitor.models import UserData, JobData, TimeData
+from batch_farm_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
 class SimpleTest(TestCase):
 	def test_update_fetch_data_bad_addr(self):

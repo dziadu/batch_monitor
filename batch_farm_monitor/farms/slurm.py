@@ -7,7 +7,7 @@ g_user_total = None
 class Slurm(FarmEngine):
     def __init__(self, remote):
         super(Slurm, self).__init__(remote)
-        self.cmd = "squeue -S i -o \"%A %u %P %l %T %M %p\""
+        self.cmd = "squeue -S i -o \"%i %u %P %l %T %M %p\""
 
     def parse(self):
         if self.data is None:
@@ -43,21 +43,37 @@ class Slurm(FarmEngine):
                     if _farm in re.split(', ', self.partitions):
                         continue
 
-                    _jid        = words[0]
                     _user        = words[1]
                     _reqtime    = words[3]
                     _status        = words[4]
                     _elatime    = words[5]
                     _priority    = float(words[6])
 
-                    jid = int(_jid)
+                    jobs_group = re.match("(\d+)\_\[(\d+)\-(\d+)\]", words[0])
+                    if jobs_group is None:
+                        jobs_group = res = re.match("(\d+)", words[0])
+                    if jobs_group is None:
+                        continue
 
-                    jd = JobData(jid, _user, _farm,
-                        self.status_decode(_status),
-                        self.strtime2secs(_reqtime),
-                        self.strtime2secs(_elatime),
-                        _priority)
-                    jobs_list.append(jd)
+                    if len(jobs_group.groups()) == 1:
+                        _jid = jobs_group.groups()[0]
+
+                        jd = JobData(_jid, _user, _farm,
+                            self.status_decode(_status),
+                            self.strtime2secs(_reqtime),
+                            self.strtime2secs(_elatime),
+                            _priority)
+                        jobs_list.append(jd)
+                    elif len(jobs_group.groups()) == 3:
+                        for i in range(int(jobs_group.groups()[1]), int(jobs_group.groups()[2])+1):
+                            _jid = jobs_group.groups()[0] + "_" + str(i)
+
+                            jd = JobData(_jid, _user, _farm,
+                                self.status_decode(_status),
+                                self.strtime2secs(_reqtime),
+                                self.strtime2secs(_elatime),
+                                _priority)
+                            jobs_list.append(jd)
 
         return jobs_list
 

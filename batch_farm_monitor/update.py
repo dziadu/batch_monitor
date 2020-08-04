@@ -67,6 +67,26 @@ def parse_data(fs_obj, farm_obj, jobs_list, users_list):
         validate_jobs_list(jobs_list, users_list)
         cleanup_jobs_list(jobs_list, users_list)
 
+def compare_jid(jid1, jid2):
+    _jid1 = jid1.split("_")
+    _jid2 = jid2.split("_")
+
+    if _jid1[0] == _jid2[0]:
+        if len(_jid1)  == 2 and len(_jid2) == 2:
+            if _jid1[1] == _jid2[1]:
+                return 0
+            elif _jid1[1] < _jid2[1]:
+                return -1
+            elif _jid1[1] > _jid2[1]:
+                return 1
+        else:
+            return 0
+    elif _jid1[0] < _jid2[0]:
+        return -1
+    elif _jid1[0] > _jid2[0]:
+        return 1
+
+
 def update_jobs_list(jobs_list, users_list, last_jobs):
     """ job list length to iterate on """
     job_list_len = len(jobs_list)
@@ -99,7 +119,7 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
 
             else:
                 """ if jid is smaller than jid of current job """
-                if jobs_list[job_cnt].jid < jd.jid:
+                if compare_jid(jobs_list[job_cnt].jid, jd.jid) == -1:
                     #print(" Removing job %d" % jobs_list[job_cnt].jid)
                     """ otherwise job we are comparing to is finished
                     mark as done and jump to next one """
@@ -109,7 +129,7 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
                     continue
 
                     """ update status of the job and break loop """
-                elif jobs_list[job_cnt].jid == jd.jid:
+                elif compare_jid(jobs_list[job_cnt].jid, jd.jid) == 0:
                     #print(" Updating job %d" % jobs_list[job_cnt].jid)
                     jobs_list[job_cnt].update_status(jd)
                     #print(jd)

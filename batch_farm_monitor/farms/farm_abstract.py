@@ -124,7 +124,7 @@ class JobData():
         self.priority = job.priority
 
     def __str__(self):
-        return "JID: {:d} NAME: {:s} FARM: {:s} REQ: {:d} STA: {:d} ELA: {:d}".format(self.jid, self.name, self.farm, self.req_time, self.status, self.ela_time)
+        return "JID: {:s} NAME: {:s} FARM: {:s} REQ: {:d} STA: {:d} ELA: {:d}".format(self.jid, self.name, self.farm, self.req_time, self.status, self.ela_time)
 
 class Command(object):
     def __init__(self, tid, cmd):

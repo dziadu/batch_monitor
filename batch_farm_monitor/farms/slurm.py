@@ -1,4 +1,5 @@
 from batch_farm_monitor.farms.farm_abstract import Command, JobData, FarmEngine
+import re
 
 g_users = None
 g_user_total = None
@@ -39,7 +40,7 @@ class Slurm(FarmEngine):
                         continue
 
                     _farm        = words[2]
-                    if _farm != self.partitions:
+                    if _farm in re.split(', ', self.partitions):
                         continue
 
                     _jid        = words[0]

@@ -166,7 +166,7 @@ class FairShareEngine(object):
         remote_cmd = "{:s} {:s}".format(self.remote, self.cmd)
         command = Command("farm command", remote_cmd)
         command.run()
-        co, ce, ter, errno = command.check(timeout=2)
+        co, ce, ter, errno = command.check(timeout=10)
 
         self.data = co.decode("UTF-8")
         return self.data, errno
@@ -188,7 +188,7 @@ class FarmEngine(object):
 
         command = Command("farm command", remote_cmd)
         command.run()
-        co, ce, ter, errno = command.check(timeout=2)
+        co, ce, ter, errno = command.check(timeout=10)
 
         if co is not None:
             self.data = co.decode("UTF-8")

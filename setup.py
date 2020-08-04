@@ -18,7 +18,7 @@ from setuptools.command.test import test
 
 setup(
     name="django-batch-farm-monitor",
-    version="0.0.2",
+    version="0.0.3",
     packages=['batch_farm_monitor'],
     license="The MIT License (MIT)",
     include_package_data = True,

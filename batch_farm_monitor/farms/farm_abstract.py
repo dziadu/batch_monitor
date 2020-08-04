@@ -175,10 +175,11 @@ class FairShareEngine(object):
         return []
 
 class FarmEngine(object):
-    def __init__(self, remote):
+    def __init__(self, remote, partitions=""):
         self.remote = remote
         self.data = None
         self.cmd = None
+        self.partitions = partitions
 
     def fetch(self):
         if self.remote is None:

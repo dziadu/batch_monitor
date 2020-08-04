@@ -39,7 +39,7 @@ class Slurm(FarmEngine):
                         continue
 
                     _farm        = words[2]
-                    if _farm != "gccb":
+                    if _farm != self.partitions:
                         continue
 
                     _jid        = words[0]

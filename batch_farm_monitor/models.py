@@ -18,3 +18,12 @@ class BatchHostSettings(models.Model):
     fs_engine = models.CharField(max_length=100, blank=True)
     farm_engine = models.CharField(max_length=10, blank=True, choices=FARM_ENGINE_CHOICES)
     partitions = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        label = self.name + " at ";
+        label += self.name + "@" if len(self.name) else ""
+        label += self.host
+        label += ":" + str(self.port) if self.port is not None else ""
+        label += "  Engine: " + self.farm_engine if self.farm_engine else ""
+        label += "  FairShare: " + self.fs_engine if self.fs_engine else ""
+        return label

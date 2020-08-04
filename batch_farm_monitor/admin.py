@@ -14,11 +14,11 @@ from django.db.models.base import ModelBase
 
 class BatchHostSettingsAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None,                  {'fields' : ['name', 'host', 'user', 'port', 'sshpub', 'fs_engine', 'farm_engine']}),
+        (None,                  {'fields' : ['name', 'host', 'user', 'port', 'sshpub', 'fs_engine', 'farm_engine', 'partitions']}),
         #('Date information',    {'fields' : ['secret'], 'classes': ['collapse']}),
     ]
     #inlines = [ChoiceInLine]
-    list_display = [ 'name', 'host', 'user', 'port', 'fs_engine', 'farm_engine' ]
+    list_display = [ 'name', 'host', 'user', 'port', 'fs_engine', 'farm_engine', 'partitions' ]
     #list_filter = [ 'pub_date' ]
     #search_fields = ['question']
 

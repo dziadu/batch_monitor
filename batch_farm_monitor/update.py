@@ -57,11 +57,17 @@ def parse_data(fs_obj, farm_obj, jobs_list, users_list):
         for u in range(len(_users)):
             _u = _users[u]
             if _u.name not in users_list:
-                print("Adding user " + _u.name)
+                print("Adding user from FS " + _u.name)
                 users_list[_u.name] = _u
 
     if farm_obj:
         _jobs = farm_obj.parse()
+
+        for j in _jobs:
+            if j.name not in users_list:
+                print("Adding user from FE " + j.name)
+                users_list[j.name] = UserData(j.name)
+                users_list[j.name].clear()
 
         update_jobs_list(jobs_list, users_list, _jobs)
         validate_jobs_list(jobs_list, users_list)

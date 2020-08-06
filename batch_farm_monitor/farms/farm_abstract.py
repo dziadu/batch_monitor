@@ -23,7 +23,7 @@ class UserData():
     def __init__(self, name):
         self.name = name
         self.viscnt = 0
-        self.q_njobsT = deque(maxlen=deque_len)
+        self.q_njobsS = deque(maxlen=deque_len)
         self.q_njobsR = deque(maxlen=deque_len)
         self.q_njobsH = deque(maxlen=deque_len)
         self.q_njobsQ = deque(maxlen=deque_len)
@@ -32,7 +32,7 @@ class UserData():
         self.q_jcalctime = deque(maxlen=calctime_len)
         self.q_ucalctime = deque(maxlen=deque_len)
 
-        self.njobsT = 0
+        self.njobsS = 0
         self.njobsR = 0
         self.njobsH = 0
         self.njobsQ = 0
@@ -40,7 +40,7 @@ class UserData():
         self.nuserCT = 0
 
     def clear(self):
-        self.njobsT = 0
+        self.njobsS = 0
         self.njobsR = 0
         self.njobsH = 0
         self.njobsQ = 0
@@ -49,9 +49,9 @@ class UserData():
         del self.l_jobprogress[:]
 
     def fill(self, fs_normalisation=1.):
-        self.njobsT = self.njobsR + self.njobsH + self.njobsQ
+        self.njobsS = self.njobsR + self.njobsH + self.njobsQ
 
-        self.q_njobsT.append(self.njobsT)
+        self.q_njobsS.append(self.njobsS)
         self.q_njobsR.append(self.njobsR)
         self.q_njobsH.append(self.njobsH)
         self.q_njobsQ.append(self.njobsQ)
@@ -63,16 +63,16 @@ class UserData():
 
         self.q_ucalctime.append(self.nuserCT)
 
-        #if self.njobsT > 0:
-            #self.viscnt = deque_len
-        #elif self.viscnt > 0:
-            #self.viscnt -= 1
+        if self.njobsS > 0:
+            self.viscnt = deque_len
+        elif self.viscnt > 0:
+            self.viscnt -= 1
 
         # FIXME till the end
         #if self.q_fairshare < 100.0:
             #self.viscnt = deque_len
         #else:
-            #if self.njobsT > 0:
+            #if self.njobsS > 0:
                 #self.viscnt = deque_len
             #elif self.viscnt > 0:
                 #self.viscnt -= 1

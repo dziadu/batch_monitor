@@ -142,7 +142,7 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, 6248064)
         self.assertEqual(jobs_list[exp_len-1].jid, 6248080)
         test_user = users_list['rmuenzer']
-        self.assertEqual(test_user.njobsT, exp_len)
+        self.assertEqual(test_user.njobsS, exp_len)
         self.assertEqual(test_user.njobsQ, 11)
         self.assertEqual(test_user.njobsR, 6)
         self.assertEqual(test_user.njobsH, 0)
@@ -155,7 +155,7 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, 6248067)
         self.assertEqual(jobs_list[exp_len-1].jid, 6248079)
         test_user = users_list['rmuenzer']
-        self.assertEqual(test_user.njobsT, exp_len)
+        self.assertEqual(test_user.njobsS, exp_len)
         self.assertEqual(test_user.njobsQ, 5)
         self.assertEqual(test_user.njobsR, 8)
         self.assertEqual(test_user.njobsH, 0)
@@ -168,7 +168,7 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, 6248067)
         self.assertEqual(jobs_list[exp_len-1].jid, 6248086)
         test_user = users_list['rmuenzer']
-        self.assertEqual(test_user.njobsT, exp_len)
+        self.assertEqual(test_user.njobsS, exp_len)
         self.assertEqual(test_user.njobsQ, 13)
         self.assertEqual(test_user.njobsR, 3)
         self.assertEqual(test_user.njobsH, 3)
@@ -179,7 +179,7 @@ class SimpleTest(TestCase):
         exp_len = 0
         self.assertEqual(len(jobs_list), exp_len)
         test_user = users_list['rmuenzer']
-        self.assertEqual(test_user.njobsT, 0)
+        self.assertEqual(test_user.njobsS, 0)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 0)
         self.assertEqual(test_user.njobsH, 0)
@@ -221,7 +221,7 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, '7574')
         self.assertEqual(jobs_list[exp_len-1].jid, '7576')
         test_user = users_list['rlalik']
-        self.assertEqual(test_user.njobsT, exp_len)
+        self.assertEqual(test_user.njobsS, exp_len)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 2)
         self.assertEqual(test_user.njobsH, 0)
@@ -235,12 +235,12 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, '7574')
         self.assertEqual(jobs_list[exp_len-1].jid, '7580')
         test_user = users_list['rlalik']
-        self.assertEqual(test_user.njobsT, 2)
+        self.assertEqual(test_user.njobsS, 2)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 2)
         self.assertEqual(test_user.njobsH, 0)
         test_user = users_list['tkunz']
-        self.assertEqual(test_user.njobsT, 4)
+        self.assertEqual(test_user.njobsS, 4)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 4)
         self.assertEqual(test_user.njobsH, 0)
@@ -254,12 +254,12 @@ class SimpleTest(TestCase):
         self.assertEqual(jobs_list[0].jid, '7576')
         self.assertEqual(jobs_list[exp_len-1].jid, '7580')
         test_user = users_list['rlalik']
-        self.assertEqual(test_user.njobsT, 1)
+        self.assertEqual(test_user.njobsS, 1)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 1)
         self.assertEqual(test_user.njobsH, 0)
         test_user = users_list['tkunz']
-        self.assertEqual(test_user.njobsT, 3)
+        self.assertEqual(test_user.njobsS, 3)
         self.assertEqual(test_user.njobsQ, 0)
         self.assertEqual(test_user.njobsR, 3)
         self.assertEqual(test_user.njobsH, 0)

@@ -25,7 +25,7 @@
 |
 <li>Monitoring farm <emph>{{ farm.name }}</emph></li>
 |
-<li><a href="mailto:rafal.lalik@ph.tum.de?subject=FarmMonitor:">Report problem</a></li>
+<li><a href="mailto:rafal.lalik@uj.edu.pl?subject=FarmMonitor:">Report problem</a></li>
 |
 <li>
 <input id="def_button" type="button" value="Set Grid to Default" onclick="grid_to_default()">
@@ -37,38 +37,38 @@
 
 <div id="gridster" class="gridster">
 	<ul id="gridster_ul">
-	<li data-row="1" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="ctj">
-	<div id='container_tj' class="chart"> Chart will be rendered here </div>
+	<li data-row="1" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="csj">
+	<div id='container_submitted' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="1" data-col="7" data-sizex="6" data-sizey="4" class="gs-w" id="crj">
-	<div id='container_rj' class="chart"> Chart will be rendered here </div>
+	<div id='container_running' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="2" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="cfs">
-	<div id='container_fs' class="chart"> Chart will be rendered here </div>
+	<div id='container_fairshare' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="2" data-col="7" data-sizex="3" data-sizey="4" class="gs-w" id="cjct">
-	<div id='container_jct' class="chart"> Chart will be rendered here </div>
+	<div id='container_jcomptime' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="2" data-col="10" data-sizex="3" data-sizey="4" class="gs-w" id="cjp">
-	<div id='container_jp' class="chart"> Chart will be rendered here </div>
+	<div id='container_progress' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="3" data-col="1" data-sizex="6" data-sizey="4" class="gs-w" id="cuct">
-	<div id='container_uct' class="chart"> Chart will be rendered here </div>
+	<div id='container_ucomptime' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 
 	<li data-row="3" data-col="7" data-sizex="6" data-sizey="4" class="gs-w" id="cjs">
-	<div id='container_js' class="chart"> Chart will be rendered here </div>
+	<div id='container_jsummary' class="chart"> Chart will be rendered here </div>
 	<header></header>
 	</li>
 	</ul>
@@ -79,7 +79,7 @@
 <script src="{% static 'batch_farm_monitor/gridster/dist/jquery.dsmorse-gridster.js' %}" type="text/javascript" charset="utf-8"></script>
 <script src="{% static 'batch_farm_monitor/gridster_init.js' %}" type="text/javascript" charset="utf-8"></script>
 
-{{ charts|show_charts:"container_tj,container_rj,container_fs,container_jp,container_jct,container_uct,container_js" }}
+{{ charts|show_charts:"container_submitted,container_running,container_fairshare,container_progress,container_jcomptime,container_ucomptime,container_jsummary" }}
 
 
 </body>

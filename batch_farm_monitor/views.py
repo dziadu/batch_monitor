@@ -25,14 +25,14 @@ from datetime import datetime
 
 from batch_farm_monitor.conf import config as bmconfig
 
-label_tj = 'Total jobs'
-label_rj = 'Running jobs'
-label_qj = 'Queued jobs'
-label_hj = 'Hold jobs'
-label_jp = 'Jobs race'
-label_fs = 'Fair share rank'
-label_jct = 'Jobs computing time'
-label_uct = 'Users computing time'
+label_submitted = 'Submitted jobs'
+label_running = 'Running jobs'
+label_queued = 'Queued jobs'
+label_hold = 'Hold jobs'
+label_progress = 'Jobs race'
+label_fairshare = 'Fair share rank'
+label_jcomptime = 'Jobs computing time'
+label_ucomptime = 'Users computing time'
 
 class IndexView(generic.ListView):
     template_name = 'batch_farm_monitor/index.html'
@@ -78,50 +78,50 @@ def monitor(request, farm_id):
     farm = get_object_or_404(BatchHostSettings, id=farm_id)
     d = dict()
     d['farm'] = farm
-    data_series_tj = cache.get('data_trend_tj', None)
+    data_series_submitted = cache.get('trend_submitted', None)
 
-    if data_series_tj is None:
+    if data_series_submitted is None:
         prepare_data(farm_id)
 
     if hasattr(settings, 'BATCH_FARM_SEND_INITIAL_DATA') and settings.BATCH_FARM_SEND_INITIAL_DATA == True:
-        data_series_tj = cache.get('data_trend_tj', [])
-        data_series_rj = cache.get('data_trend_rj', [])
-        data_series_fs = cache.get('data_trend_fs', [])
-        data_series_uct = cache.get('data_trend_uct', [])
-        data_hist_jct = cache.get('data_hist_jct', [])
-        data_dist_jp = cache.get('data_dist_jp', [])
-        data_group_tj = cache.get('data_tj_f', [])
-        data_group_rj = cache.get('data_rj_f', [])
-        data_group_qj = cache.get('data_qj_f', [])
+        data_series_submitted = cache.get('trend_submitted', [])
+        data_series_running = cache.get('trend_running', [])
+        data_series_fairshare = cache.get('trend_fairshare', [])
+        data_series_ucomptime = cache.get('trend_ucomptime', [])
+        hist_jcomptime = cache.get('hist_jcomptime', [])
+        dist_progress = cache.get('dist_progress', [])
+        data_group_submitted = cache.get('data_submitted_f', [])
+        data_group_running = cache.get('data_running_f', [])
+        data_group_queued = cache.get('data_queued_f', [])
     else:
-        data_series_tj = []
-        data_series_rj = []
-        data_series_fs = []
-        data_series_uct = []
-        data_hist_jct = []
-        data_dist_jp = []
-        data_group_tj = []
-        data_group_rj = []
-        data_group_qj = []
+        data_series_submitted = []
+        data_series_running = []
+        data_series_fairshare = []
+        data_series_ucomptime = []
+        hist_jcomptime = []
+        dist_progress = []
+        data_group_submitted = []
+        data_group_running = []
+        data_group_queued = []
 
-    chart_tj = format_trend_plot(farm_id, 'tj', label_tj, series_data=data_series_tj)
-    chart_rj = format_trend_plot(farm_id, 'rj', label_rj, series_data=data_series_rj)
-    chart_fs = format_trend_plot(farm_id, 'fs', label_fs, series_data=data_series_fs)
-    chart_uct = format_trend_plot(farm_id, 'uct', label_uct, series_data=data_series_uct, ylabel='Time [min]')
+    chart_submitted = format_trend_plot(farm_id, 'sj', label_submitted, series_data=data_series_submitted)
+    chart_running = format_trend_plot(farm_id, 'rj', label_running, series_data=data_series_running)
+    chart_fairshare = format_trend_plot(farm_id, 'fs', label_fairshare, series_data=data_series_fairshare)
+    chart_ucomptime = format_trend_plot(farm_id, 'uct', label_ucomptime, series_data=data_series_ucomptime, ylabel='Time [min]')
 
-    chart_jct = format_hist_plot(farm_id, 'jct', label_jct, series_data=data_hist_jct)
+    chart_jcomptime = format_hist_plot(farm_id, 'jct', label_jcomptime, series_data=hist_jcomptime)
 
-    pie_chart_tj = format_embedded_pie_chart(label_tj, data_group_tj, [ '17%', '50%' ])
-    pie_chart_rj = format_embedded_pie_chart(label_rj, data_group_rj, [ '50%', '50%' ])
-    pie_chart_qj = format_embedded_pie_chart(label_qj, data_group_qj, [ '83%', '50%' ])
+    pie_chart_submitted = format_embedded_pie_chart(label_submitted, data_group_submitted, [ '17%', '50%' ])
+    pie_chart_running = format_embedded_pie_chart(label_running, data_group_running, [ '50%', '50%' ])
+    pie_chart_queued = format_embedded_pie_chart(label_queued, data_group_queued, [ '83%', '50%' ])
 
-    scatter_pie_all_data = data_dist_jp
-    embedded_pie_all = [ pie_chart_tj, pie_chart_rj, pie_chart_qj]
+    scatter_pie_all_data = dist_progress
+    embedded_pie_all = [ pie_chart_submitted, pie_chart_running, pie_chart_queued]
 
-    chart_jp = format_dist_plot(farm_id, 'jp', label_jp, data=scatter_pie_all_data)
-    chart_js = format_pie_chart(farm_id, 'js', 'Jobs summary', data=embedded_pie_all)
+    chart_progress = format_dist_plot(farm_id, 'jp', label_progress, data=scatter_pie_all_data)
+    chart_jsummary = format_pie_chart(farm_id, 'js', 'Jobs summary', data=embedded_pie_all)
 
-    d['charts'] = [chart_tj, chart_rj, chart_fs, chart_jp, chart_jct, chart_uct, chart_js]
+    d['charts'] = [chart_submitted, chart_running, chart_fairshare, chart_progress, chart_jcomptime, chart_ucomptime, chart_jsummary]
 
     return render(request, 'batch_farm_monitor/monitor.html', d)
 
@@ -129,17 +129,17 @@ def monitor(request, farm_id):
 def prepare_data(farm):
     data_list_ts = []
 
-    data_series_tj = []
-    data_series_rj = []
-    data_series_fs = []
-    data_series_uct = []
+    data_series_submitted = []
+    data_series_running = []
+    data_series_fairshare = []
+    data_series_ucomptime = []
 
-    data_hist_jct = []
-    data_dist_jp = []
+    hist_jcomptime = []
+    dist_progress = []
 
-    data_group_tj = []
-    data_group_rj = []
-    data_group_qj = []
+    data_group_submitted = []
+    data_group_running = []
+    data_group_queued = []
 
     g_ts = cache.get("time_stamp", None)
 
@@ -155,15 +155,15 @@ def prepare_data(farm):
                 continue
 
             val = g_users[u]
-            idx = g_users.keys().index(u)
-            col_idx = len(data_series_tj)
+            idx = list(g_users.keys()).index(u)
+            col_idx = len(data_series_submitted)
 
-            _ltj = [list(a) for a in zip(data_list_ts[-len(val.q_njobsT):], list(val.q_njobsT))]
+            _lsj = [list(a) for a in zip(data_list_ts[-len(val.q_njobsS):], list(val.q_njobsS))]
             _lrj = [list(a) for a in zip(data_list_ts[-len(val.q_njobsR):], list(val.q_njobsR))]
 
-            _n_tj = val.q_njobsT[len(val.q_njobsT)-1]
-            _n_rj = val.q_njobsR[len(val.q_njobsR)-1]
-            _n_qj = val.q_njobsQ[len(val.q_njobsQ)-1]
+            _n_submitted = val.q_njobsS[len(val.q_njobsS)-1]
+            _n_running = val.q_njobsR[len(val.q_njobsR)-1]
+            _n_queued = val.q_njobsQ[len(val.q_njobsQ)-1]
 
             _lfs = [list(a) for a in zip(data_list_ts[-len(val.q_fairshare):], list(val.q_fairshare))]
             _ljp = list(val.l_jobprogress)
@@ -176,57 +176,57 @@ def prepare_data(farm):
                 if user_name in bmconfig.user_map:
                     user_name = bmconfig.user_map[user_name]
 
-            data_series_tj.append({ 'name' : user_name, 'data': _ltj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-            data_series_rj.append({ 'name' : user_name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-            data_series_fs.append({ 'name' : user_name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
-            data_series_uct.append({ 'name' : user_name, 'data': _luct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            data_series_submitted.append({ 'name' : user_name, 'data': _lsj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            data_series_running.append({ 'name' : user_name, 'data': _lrj, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            data_series_fairshare.append({ 'name' : user_name, 'data': _lfs, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            data_series_ucomptime.append({ 'name' : user_name, 'data': _luct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
-            data_dist_jp.append({ 'name' : user_name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            dist_progress.append({ 'name' : user_name, 'data': _ljp, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
-            if _n_tj > 0:
-                data_group_tj.append({ 'name' : user_name, 'y': _n_tj, '_color': col_idx })
-            if _n_rj > 0:
-                data_group_rj.append({ 'name' : user_name, 'y': _n_rj, '_color': col_idx })
-            if _n_qj > 0:
-                data_group_qj.append({ 'name' : user_name, 'y': _n_qj, '_color': col_idx })
+            if _n_submitted > 0:
+                data_group_submitted.append({ 'name' : user_name, 'y': _n_submitted, '_color': col_idx })
+            if _n_running > 0:
+                data_group_running.append({ 'name' : user_name, 'y': _n_running, '_color': col_idx })
+            if _n_queued > 0:
+                data_group_queued.append({ 'name' : user_name, 'y': _n_queued, '_color': col_idx })
 
-            data_hist_jct.append({ 'name' : user_name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
+            hist_jcomptime.append({ 'name' : user_name, 'data': _ljct, 'zIndex': col_idx, 'index': idx, '_color': col_idx })
 
 
         val = g_users['ALL']
-        col_idx = len(data_series_tj)
+        col_idx = len(data_series_submitted)
 
-        _ltj = [list(a) for a in zip(data_list_ts, list(val.q_njobsT))]
+        _lsj = [list(a) for a in zip(data_list_ts, list(val.q_njobsS))]
         _lrj = [list(a) for a in zip(data_list_ts, list(val.q_njobsR))]
 
-        data_series_tj.append({ 'name' : val.name, 'data': _ltj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
-        data_series_rj.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+        data_series_submitted.append({ 'name' : val.name, 'data': _lsj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
+        data_series_running.append({ 'name' : val.name, 'data': _lrj, 'zIndex': -1, 'index': 99999, '_color': col_idx })
 
-    cache.set('data_trend_tj', data_series_tj)
-    cache.set('data_trend_rj', data_series_rj)
-    cache.set('data_trend_fs', data_series_fs)
-    cache.set('data_trend_uct', data_series_uct)
-    cache.set('data_hist_jct', data_hist_jct)
-    cache.set('data_dist_jp', data_dist_jp)
-    cache.set('data_pie_tj', data_group_tj)
-    cache.set('data_pie_rj', data_group_rj)
-    cache.set('data_pie_qj', data_group_qj)
+    cache.set('trend_submitted', data_series_submitted)
+    cache.set('trend_running', data_series_running)
+    cache.set('trend_fairshare', data_series_fairshare)
+    cache.set('trend_ucomptime', data_series_ucomptime)
+    cache.set('hist_jcomptime', hist_jcomptime)
+    cache.set('dist_progress', dist_progress)
+    cache.set('pie_submitted', data_group_submitted)
+    cache.set('pie_running', data_group_running)
+    cache.set('pie_queued', data_group_queued)
 
-    for i in range(len(data_group_tj)):
-        _c = data_group_tj[i]['_color']
-        data_group_tj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
+    for i in range(len(data_group_submitted)):
+        _c = data_group_submitted[i]['_color']
+        data_group_submitted[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-    for i in range(len(data_group_rj)):
-        _c = data_group_rj[i]['_color']
-        data_group_rj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
+    for i in range(len(data_group_running)):
+        _c = data_group_running[i]['_color']
+        data_group_running[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-    for i in range(len(data_group_qj)):
-        _c = data_group_qj[i]['_color']
-        data_group_qj[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
+    for i in range(len(data_group_queued)):
+        _c = data_group_queued[i]['_color']
+        data_group_queued[i]['color'] = '$@#Highcharts.getOptions().colors[ %d ]#@$' % _c
 
-    cache.set('data_tj_f', data_group_tj)
-    cache.set('data_rj_f', data_group_rj)
-    cache.set('data_qj_f', data_group_qj)
+    cache.set('data_submitted_f', data_group_submitted)
+    cache.set('data_running_f', data_group_running)
+    cache.set('data_queued_f', data_group_queued)
 
 def format_trend_plot(farm, chart_data_type, title, series_data, xlabel='Time', ylabel='Jobs number'):
     chart = {

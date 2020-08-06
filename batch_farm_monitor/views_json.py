@@ -6,9 +6,9 @@ from django.http import JsonResponse
 #import json
 import simplejson as json
 
-label_tj = 'Total jobs'
-label_rj = 'Running jobs'
-label_qj = 'Queued jobs'
+label_submitted = 'Submitted jobs'
+label_running = 'Running jobs'
+label_queued = 'Queued jobs'
 
 @json_response
 def jsonreq(request, farm_id, data_type):
@@ -27,37 +27,38 @@ def jsonreq(request, farm_id, data_type):
     if g_ts is None:
         return None
 
-    if data_type == "tj":
-        response_data = cache.get('data_trend_tj', None)
+    if data_type == "sj":
+        response_data = cache.get('trend_submitted', None)
     elif data_type == "rj":
-        response_data = cache.get('data_trend_rj', None)
+        response_data = cache.get('trend_running', None)
     elif data_type == "fs":
-        response_data = cache.get('data_trend_fs', None)
+        response_data = cache.get('trend_fairshare', None)
     elif data_type == "uct":
-        response_data = cache.get('data_trend_uct', None)
+        response_data = cache.get('trend_ucomptime', None)
     elif data_type == "jp":
-        response_data = cache.get('data_dist_jp', None)
+        response_data = cache.get('dist_progress', None)
         return {
             'result': response_data,
             }
     elif data_type == "js":
+        print(cache.get('pie_submitted', None))
         return {
             'pie': [
                 {
-                    'name' : label_tj,
-                    'data': cache.get('data_pie_tj', None),
+                    'name' : label_submitted,
+                    'data': cache.get('pie_submitted', None),
                 },
                 {
-                    'name' : label_rj,
-                    'data': cache.get('data_pie_rj', None),
+                    'name' : label_running,
+                    'data': cache.get('pie_running', None),
                 },
                 {
-                    'name' : label_qj,
-                    'data': cache.get('data_pie_qj', None),
+                    'name' : label_queued,
+                    'data': cache.get('pie_queued', None),
                 }
             ]}
     elif data_type == "jct":
-        response_data = cache.get('data_hist_jct', None)
+        response_data = cache.get('hist_jcomptime', None)
         return {
             'result': response_data,
         }

@@ -177,7 +177,7 @@ def validate_jobs_list(farm, jobs_list, users_list):
 
         elif jobs_list[i].is_queued():
             _user.njobsQ += 1
-            _user.njobsT += 1
+            _user.njobsS += 1
             total_queued += 1
             if _user.fairshare and _user.fairshare < jobs_list[i].priority:
                 _user.fairshare = jobs_list[i].priority
@@ -185,24 +185,23 @@ def validate_jobs_list(farm, jobs_list, users_list):
         elif jobs_list[i].is_running():
             _user.nuserCT += jobs_list[i].calc_time()
             _user.njobsR += 1
-            _user.njobsT += 1
+            _user.njobsS += 1
             #_user.fairshare += jobs_list[i].priority
             total_run += 1
             #total_fs += jobs_list[i].priority
-
-            if jobs_list[i].farm[0:3] in partitions:
+            if jobs_list[i].farm in partitions:
                 _user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
 
         elif jobs_list[i].is_hold():
             _user.njobsH += 1
-            _user.njobsT += 1
+            _user.njobsS += 1
             total_hold += 1
 
     user_total = users_list['ALL']
     user_total.njobsR = total_run
     user_total.njobsQ = total_queued
     user_total.njobsH = total_hold
-    user_total.njobsT = total_run + total_queued + total_hold
+    user_total.njobsS = total_run + total_queued + total_hold
 
     for u in users_list:
         if users_list[u].fairshare is not None:

@@ -1,14 +1,18 @@
 from batch_farm_monitor.models import BatchHostSettings
 from batch_farm_monitor.farms.farm_abstract import UserData, JobData, TimeData
 
-import datetime, time
+import datetime
 import collections
-import threading, subprocess
-import importlib, inspect
+import importlib
+import inspect
+import re
+import time
+import threading
+import subprocess
 
 from django.core.cache import cache
 
-def import_modules(remote, fsengine, farmengine):
+def import_modules(remote, local, file, fsengine, farmengine):
     fs_obj = None
     farm_obj = None
 
@@ -28,7 +32,7 @@ def import_modules(remote, fsengine, farmengine):
         for m in clsmembers:
             if m[1].__module__ == modname:
                 fs_class = getattr(module, m[0])
-                farm_obj = fs_class(remote)
+                farm_obj = fs_class(remote, local, file)
 
     return fs_obj, farm_obj
 
@@ -46,7 +50,7 @@ def fetch_data(fs_obj, farm_obj, countdown=0):
 
     return co1, co2, errno1, errno2
 
-def parse_data(fs_obj, farm_obj, jobs_list, users_list):
+def parse_data(farm, fs_obj, farm_obj, jobs_list, users_list):
     co1 = ""
     co2 = ""
     errno1 = 255
@@ -70,7 +74,7 @@ def parse_data(fs_obj, farm_obj, jobs_list, users_list):
                 users_list[j.name].clear()
 
         update_jobs_list(jobs_list, users_list, _jobs)
-        validate_jobs_list(jobs_list, users_list)
+        validate_jobs_list(farm, jobs_list, users_list)
         cleanup_jobs_list(jobs_list, users_list)
 
 def compare_jid(jid1, jid2):
@@ -151,7 +155,7 @@ def update_jobs_list(jobs_list, users_list, last_jobs):
         jobs_list[job_cnt].mark_done()
         job_cnt += 1
 
-def validate_jobs_list(jobs_list, users_list):
+def validate_jobs_list(farm, jobs_list, users_list):
     jobs_len = len(jobs_list)
 
     total_run = 0
@@ -162,6 +166,7 @@ def validate_jobs_list(jobs_list, users_list):
     for u in users_list:
         users_list[u].clear()
 
+    partitions = re.split(', ', farm.partitions)
     """ adding finished jobs to queue of calculation time """
     for i in range(jobs_len):
         _name = jobs_list[i].name
@@ -185,7 +190,7 @@ def validate_jobs_list(jobs_list, users_list):
             total_run += 1
             #total_fs += jobs_list[i].priority
 
-            if jobs_list[i].farm[0:3] == "kta":
+            if jobs_list[i].farm[0:3] in partitions:
                 _user.l_jobprogress.append([jobs_list[i].requested(), jobs_list[i].progress()])
 
         elif jobs_list[i].is_hold():
@@ -228,10 +233,6 @@ def cleanup_jobs_list(jobs_list, users_list):
         del jobs_list[0:rm_queue_sta+1]
 
 def parse_farm(farm):
-    if farm.port == "":
-        remote = None
-    else:
-        remote = "ssh -o 'BatchMode yes' -p {:d} {:s}@{:s}".format(farm.port, farm.user, farm.host)
 
     g_ts = cache.get("time_stamp", None)
     if g_ts is None:
@@ -247,7 +248,10 @@ def parse_farm(farm):
     else:
         farmengine_name = farm.farm_engine
 
-    fs_obj, farm_obj = import_modules(remote, fsengine_name, farmengine_name)
+    fs_obj, farm_obj = import_modules(farm.remote_source if farm.enable_remote else None,
+                                      farm.local_source  if farm.enable_remote else None,
+                                      farm.file_source if farm.enable_file else None,
+                                      fsengine_name, farmengine_name)
 
     dia_out, qst_out, dia_errno, qst_errno = fetch_data(fs_obj, farm_obj)
 
@@ -263,7 +267,7 @@ def parse_farm(farm):
 
     g_jobs = cache.get("jobs_list", [])
 
-    parse_data(fs_obj, farm_obj, g_jobs, g_users)
+    parse_data(farm, fs_obj, farm_obj, g_jobs, g_users)
 
     g_view_list = []
 

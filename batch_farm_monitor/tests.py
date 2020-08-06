@@ -12,6 +12,8 @@ from batch_farm_monitor import update
 #from batch_farm_monitor.models import UserData, JobData, TimeData
 from batch_farm_monitor.farms.farm_abstract import UserData, JobData, TimeData
 from batch_farm_monitor.update import compare_jid
+from batch_farm_monitor import defaults
+from django.conf import settings
 
 class SimpleTest(TestCase):
     def test_update_fetch_data_bad_addr(self):

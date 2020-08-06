@@ -5,8 +5,8 @@ g_users = None
 g_user_total = None
 
 class Slurm(FarmEngine):
-    def __init__(self, remote):
-        super(Slurm, self).__init__(remote)
+    def __init__(self, remote, local, file, partitions=""):
+        super(Slurm, self).__init__(remote, local, file, partitions)
         self.cmd = "squeue -S i -o \"%i %u %P %l %T %M %p\""
 
     def parse(self):
@@ -50,21 +50,7 @@ class Slurm(FarmEngine):
                     _priority    = float(words[6])
 
                     jobs_group = re.match("(\d+)\_\[(\d+)\-(\d+)\]", words[0])
-                    if jobs_group is None:
-                        jobs_group = res = re.match("(\d+)", words[0])
-                    if jobs_group is None:
-                        continue
-
-                    if len(jobs_group.groups()) == 1:
-                        _jid = jobs_group.groups()[0]
-
-                        jd = JobData(_jid, _user, _farm,
-                            self.status_decode(_status),
-                            self.strtime2secs(_reqtime),
-                            self.strtime2secs(_elatime),
-                            _priority)
-                        jobs_list.append(jd)
-                    elif len(jobs_group.groups()) == 3:
+                    if jobs_group is not None:
                         for i in range(int(jobs_group.groups()[1]), int(jobs_group.groups()[2])+1):
                             _jid = jobs_group.groups()[0] + "_" + str(i)
 
@@ -74,6 +60,31 @@ class Slurm(FarmEngine):
                                 self.strtime2secs(_elatime),
                                 _priority)
                             jobs_list.append(jd)
+                        continue
+
+                    jobs_group = re.match("(\d+)\_(\d+)", words[0])
+                    if jobs_group is not None:
+                        _jid = words[0]
+
+                        jd = JobData(_jid, _user, _farm,
+                            self.status_decode(_status),
+                            self.strtime2secs(_reqtime),
+                            self.strtime2secs(_elatime),
+                            _priority)
+                        jobs_list.append(jd)
+                        continue
+
+                    jobs_group = res = re.match("(\d+)", words[0])
+                    if jobs_group is not None:
+                        _jid = words[0]
+
+                        jd = JobData(_jid, _user, _farm,
+                            self.status_decode(_status),
+                            self.strtime2secs(_reqtime),
+                            self.strtime2secs(_elatime),
+                            _priority)
+                        jobs_list.append(jd)
+                        continue
 
         return jobs_list
 

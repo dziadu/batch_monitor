@@ -175,26 +175,37 @@ class FairShareEngine(object):
         return []
 
 class FarmEngine(object):
-    def __init__(self, remote, partitions=""):
+    def __init__(self, remote, local, file, partitions=""):
         self.remote = remote
+        self.local = local
+        self.file = file
         self.data = None
         self.cmd = None
         self.partitions = partitions
 
     def fetch(self):
-        if self.remote is None:
-            remote_cmd = "{:s}".format(self.cmd)
-        else:
-            remote_cmd = "{:s} {:s}".format(self.remote, self.cmd)
+        if self.local or self.remote:
+            if self.local:
+                remote_cmd = "{:s}".format(self.cmd)
+            if self.remote:
+                remote_cmd = "ssh -o 'BatchMode yes' {:s} {:s}".format(self.remote, self.cmd)
+            else:
+                remote_cmd = "{:s} {:s}".format(self.remote, self.cmd)
 
-        command = Command("farm command", remote_cmd)
-        command.run()
-        co, ce, ter, errno = command.check(timeout=10)
+            command = Command("farm command", remote_cmd)
+            command.run()
+            co, ce, ter, errno = command.check(timeout=10)
 
-        if co is not None:
-            self.data = co.decode("UTF-8")
+            if co is not None:
+                self.data = co.decode("UTF-8")
 
-        return self.data, errno
+            return self.data, errno
+        elif self.file:
+            with open(self.file, 'r') as fefile:
+                self.data = fefile.read()
+                return self.data, 0
+
+        return None, None
 
     def parse(self):
         return []

@@ -11,19 +11,21 @@ class BatchHostSettings(models.Model):
     ]
 
     name = models.CharField(max_length=200)
-    host = models.CharField(max_length=200)
-    user = models.CharField(max_length=200)
-    port = models.IntegerField(default=22)
+    enable_remote = models.BooleanField(default=False)
+    remote_source = models.CharField(max_length=200, blank=True)
+    local_source = models.BooleanField(default=False)
+    enable_file = models.BooleanField(default=False)
+    file_source = models.CharField(max_length=200, blank=True)
     sshpub = models.TextField(blank=True)
     fs_engine = models.CharField(max_length=100, blank=True)
     farm_engine = models.CharField(max_length=10, blank=True, choices=FARM_ENGINE_CHOICES)
     partitions = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        label = self.name + " at ";
-        label += self.name + "@" if len(self.name) else ""
-        label += self.host
-        label += ":" + str(self.port) if self.port is not None else ""
+        label = self.name
+        label += " at " + self.remote_source if len(self.remote_source) else \
+            " at local machine" if self.local_source else \
+            " in " + self.file_source if len(self.file_source) else ""
         label += "  Engine: " + self.farm_engine if self.farm_engine else ""
         label += "  FairShare: " + self.fs_engine if self.fs_engine else ""
         return label
